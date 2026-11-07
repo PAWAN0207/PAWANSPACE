@@ -1,0 +1,13 @@
+.venv
+venv
+**/node_modules
+data
+backups
+collaboration/data
+__pycache__
+.pytest_cache
+.env
+.env.*
+!.env.example
+*.zip
+.git

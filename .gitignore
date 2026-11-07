@@ -1,0 +1,42 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node.js
+node_modules/
+**/node_modules/
+
+# Application databases and user data
+/data/
+/collaboration/data/
+/backups/
+*.db
+*.sqlite
+*.sqlite3
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Backup and legacy files
+*backup*
+*.bak
+*.security-backup*
+*_before_*
+*_pre_*
+*_stage*_backup*
+
+# Test-generated documents
+/test_export.*
+
+# Git
+.git/

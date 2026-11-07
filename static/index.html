@@ -1,0 +1,921 @@
+
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PAWANSPACE — Collaborative Workspace</title>
+<style>
+:root{--bg:#fbfbfa;--panel:#f2f2ef;--card:#fff;--tx:#1c2321;--mut:#6c7773;--bd:#e0e2de;--ac:#0f6b5c;--acx:#fff;--hl:#e3f1ed}
+[data-t=dark]{--bg:#121615;--panel:#181d1c;--card:#1b2120;--tx:#e6ebe9;--mut:#8b9692;--bd:#2a3230;--ac:#4fc3ad;--acx:#0b1311;--hl:#1d2e2b}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 Inter,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+a{color:inherit;cursor:pointer;text-decoration:none}button,.btn,select,input{font:inherit;color:var(--tx)}
+button,.btn{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:5px 11px;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--ac)}button.pri{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+input,select{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:6px 9px}
+.mut{color:var(--mut)}.sp{flex:1}
+#auth{min-height:100vh;align-items:center;justify-content:center;display:flex}
+#auth form{width:330px;display:grid;gap:10px}#auth h1{font-size:26px;margin:0 0 4px}
+#app{display:none;height:100vh}
+#side{width:232px;background:var(--panel);border-right:1px solid var(--bd);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow:auto}
+#side .nav{padding:6px 10px;border-radius:6px;color:var(--mut)}#side .nav:hover{background:var(--hl);color:var(--tx)}
+#side .nav.on{background:var(--hl);color:var(--tx);font-weight:600;box-shadow:inset 3px 0 var(--ac)}
+#col{flex:1;display:flex;flex-direction:column;min-width:0}
+#top{display:flex;gap:10px;padding:10px 20px;border-bottom:1px solid var(--bd);align-items:center}
+#q{flex:1;max-width:520px}#main{flex:1;overflow:auto;padding:20px 28px}
+h2{margin:0 0 12px;font-size:22px}h3{margin:22px 0 8px;font-size:15px}
+.btns{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tbl{border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden}
+.row{display:grid;grid-template-columns:3fr 1.2fr .7fr 1.4fr 1.2fr;padding:8px 12px;border-top:1px solid var(--bd);cursor:pointer;align-items:center;gap:8px}
+.row:hover{background:var(--hl)}.row.hd{border-top:0;color:var(--mut);cursor:default;background:var(--panel)}.row.hd:hover{background:var(--panel)}
+.row a{margin-right:8px}.row2{padding:6px 0;border-top:1px solid var(--bd)}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.bar #ti{font-size:20px;font-weight:600;border:0;background:transparent;min-width:260px}
+.tb{display:flex;gap:4px;flex-wrap:wrap;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--card);margin-bottom:10px}
+.cv{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.canvas{min-height:62vh;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:36px 48px;outline:0;line-height:1.7;font-size:15.5px}
+.canvas table{border-collapse:collapse;width:100%}.canvas td{border:1px solid var(--bd);padding:6px;min-width:60px}
+.canvas pre{background:var(--panel);padding:10px;border-radius:6px;font-family:ui-monospace,Consolas,monospace}
+.canvas img{max-width:100%}.canvas.ProseMirror{outline:0}.canvas.ProseMirror p{margin:0 0 1em}.canvas.ProseMirror h1,.canvas.ProseMirror h2,.canvas.ProseMirror h3{line-height:1.25}.canvas.ProseMirror ul,.canvas.ProseMirror ol{padding-left:1.5rem}.canvas.ProseMirror blockquote{border-left:3px solid var(--ac);margin-left:0;padding-left:14px;color:var(--mut)}.canvas.ProseMirror a{color:var(--ac);text-decoration:underline}.canvas.ProseMirror:focus{border-color:var(--ac)}
+aside{border:1px solid var(--bd);border-radius:8px;padding:12px;background:var(--card)}aside h4{margin:0 0 8px}
+.cm{padding:6px 0;border-top:1px solid var(--bd)}.mn{color:var(--ac)}
+.av{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ac);color:var(--acx);font-size:12px;font-weight:700;margin-left:-4px;border:2px solid var(--bg)}
+#mod{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:9}
+#mod>div{background:var(--bg);border-radius:10px;padding:20px;width:min(560px,92vw);max-height:86vh;overflow:auto}
+#mod iframe{width:100%;height:68vh;border:0}#mod img{max-width:100%}
+.trow{padding:3px 0}.trow a:hover{color:var(--ac)}
+.wsbox{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:4px 2px 10px}
+.wsbox select{width:100%;min-width:0;font-weight:600}
+.wsadd{padding:6px 9px;font-weight:700;color:var(--ac);border-color:var(--bd)}
+.wslabel{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);padding-left:4px}
+
+@media(max-width:800px){#side{display:none}.cv{grid-template-columns:1fr}.row{grid-template-columns:2fr 1fr}.row span:nth-child(n+3){display:none}}
+.kb{display:flex;gap:12px;align-items:flex-start;overflow:auto;padding-bottom:12px}.kc{min-width:250px;width:250px;background:var(--panel);border-radius:8px;padding:10px;display:grid;gap:8px}
+.kh{display:flex;gap:8px;align-items:center}.kh b{flex:1;outline:0}.kd{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px;cursor:grab}.kd:hover{border-color:var(--ac)}
+.dt{border-collapse:collapse;width:100%}.dt th,.dt td{border-bottom:1px solid var(--bd);padding:4px 8px;text-align:left;white-space:nowrap}.dt input:not([type=checkbox]),.dt select{border:0;background:transparent;width:100%;min-width:110px}
+mark{background:var(--hl);color:var(--tx);border-bottom:2px solid var(--ac)}
+
+
+/* PAWANSPACE File Manager v2 */
+.fm-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.fm-crumbs{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:var(--mut);font-size:13px}
+.fm-crumbs a{color:var(--tx)}.fm-crumbs a:hover{color:var(--ac)}
+.fm-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;border:1px solid var(--bd);background:var(--card);border-radius:10px;margin-bottom:14px}
+.fm-toolbar input{min-width:180px;flex:1}
+.fm-count{font-size:12px;color:var(--mut);white-space:nowrap}
+.fm-toggle{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.fm-toggle button{border:0;border-radius:0}.fm-toggle button.active{background:var(--hl);color:var(--ac);font-weight:700}
+.fm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.fm-card{position:relative;min-width:0;border:1px solid var(--bd);border-radius:11px;background:var(--card);padding:14px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
+.fm-card:hover{border-color:var(--ac);transform:translateY(-2px);box-shadow:0 5px 18px #0000000d}
+.fm-icon{height:74px;display:grid;place-items:center;border-radius:8px;background:var(--panel);font-size:34px;margin-bottom:12px}
+.fm-title{font-weight:650;overflow-wrap:anywhere;line-height:1.35;min-height:38px}
+.fm-meta{font-size:12px;color:var(--mut);margin-top:7px;display:flex;flex-direction:column;gap:2px}
+.fm-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px;padding-top:9px;border-top:1px solid var(--bd)}
+.fm-actions a{font-size:12px;padding:3px 6px;border:1px solid var(--bd);border-radius:6px}
+.fm-actions a:hover{color:var(--ac);border-color:var(--ac)}
+.fm-folder .fm-icon{background:var(--hl)}
+.fm-empty{padding:42px 18px;text-align:center;border:1px dashed var(--bd);border-radius:12px;background:var(--card)}
+.fm-empty .big{font-size:38px;margin-bottom:8px}
+.fm-detail{display:grid;grid-template-columns:110px 1fr;gap:8px 14px;font-size:13px}
+.fm-detail dt{color:var(--mut)}.fm-detail dd{margin:0;overflow-wrap:anywhere}
+.fm-upload-status{font-size:12px;color:var(--ac);min-height:18px;margin:0 0 8px}
+@media(max-width:800px){.fm-toolbar input{min-width:100%;}.fm-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.fm-head{align-items:flex-start}}
+
+/* PAWANSPACE real-time collaborative cursors */
+.collaboration-carets__caret {
+  border-left: 2px solid;
+  border-right: 2px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+.collaboration-carets__label {
+  border-radius: 5px 5px 5px 0;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  left: -2px;
+  line-height: 1.2;
+  padding: 3px 7px;
+  position: absolute;
+  top: -22px;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 20;
+}
+.collaboration-carets__selection {
+  opacity: .22;
+}
+#pres {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.av {
+  transition: transform .18s ease;
+}
+.av:hover {
+  transform: translateY(-2px);
+}
+
+
+
+/* PAWANSPACE UI/UX refinement v1 — visual layer only; application logic unchanged */
+:root{
+ --bg:#f6f8fb;--panel:#f0f3f8;--card:#ffffff;--tx:#17212f;--mut:#68778a;
+ --bd:#e3e9f1;--ac:#3659d9;--acx:#ffffff;--hl:#edf1ff;
+ --shadow:0 8px 24px rgba(25,42,70,.06);--shadow-lg:0 18px 55px rgba(25,42,70,.13);
+ --radius:14px;
+}
+[data-t=dark]{
+ --bg:#0d1320;--panel:#131d2c;--card:#172235;--tx:#e9eef8;--mut:#9ba9bf;
+ --bd:#28364c;--ac:#8da4ff;--acx:#111a2a;--hl:#202d4a;
+ --shadow:0 8px 24px rgba(0,0,0,.16);--shadow-lg:0 18px 55px rgba(0,0,0,.3);
+}
+html{scroll-behavior:smooth}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.005em}
+button,.btn,input,select{transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+button,.btn{border-radius:10px;padding:8px 13px;font-weight:600;box-shadow:0 1px 2px rgba(15,23,42,.035)}
+button:hover,.btn:hover{border-color:var(--ac);transform:translateY(-1px)}
+button.pri{box-shadow:0 5px 14px color-mix(in srgb,var(--ac) 22%,transparent)}
+button.pri:hover{filter:brightness(1.06)}
+input,select{border-radius:10px;padding:9px 12px;min-height:38px}
+input:focus,select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 14%,transparent)}
+#auth{background:radial-gradient(ellipse at 15% 15%,color-mix(in srgb,var(--ac) 12%,transparent),transparent 38%),radial-gradient(ellipse at 85% 85%,rgba(35,170,150,.10),transparent 34%),var(--bg);padding:24px}
+#auth form{width:min(420px,100%);padding:38px;background:var(--card);border:1px solid var(--bd);border-radius:22px;box-shadow:var(--shadow-lg);gap:14px}
+#auth h1{font-size:30px;letter-spacing:-.04em;font-weight:800;color:var(--tx)}
+#auth form>span.mut{font-size:14px;line-height:1.6;margin-bottom:8px}
+#auth input{width:100%;min-height:46px}
+#auth button{min-height:44px}
+#app{background:var(--bg)}
+#side{width:258px;flex:0 0 258px;padding:20px 14px;background:var(--card);border-right:1px solid var(--bd);gap:5px;box-shadow:2px 0 12px rgba(20,35,60,.025);z-index:2}
+.wsbox{padding:5px 3px 18px;gap:8px}
+.wslabel{font-size:10px;font-weight:800;letter-spacing:.13em;padding:0 8px;color:var(--mut)}
+.wsbox select{min-height:42px;border-radius:11px;background:var(--panel);border-color:transparent;font-size:13px}
+.wsadd{border-radius:11px;min-width:42px;font-size:18px}
+#side .nav{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:var(--mut);transition:all .16s ease}
+#side .nav:hover{background:var(--panel);color:var(--tx);transform:translateX(2px)}
+#side .nav.on{background:var(--hl);color:var(--ac);font-weight:750;box-shadow:inset 3px 0 var(--ac)}
+#side .sp{min-height:18px}
+#side>.mut{font-size:12px!important;padding:12px 10px 5px!important;border-top:1px solid var(--bd);margin-top:12px}
+#top{min-height:70px;padding:12px 30px;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);gap:10px;position:sticky;top:0;z-index:4}
+#q{max-width:620px;min-height:42px;background:var(--panel);border-color:transparent;padding-left:15px}
+#top button{min-height:40px}
+#main{padding:30px clamp(20px,3.2vw,48px) 48px;max-width:1600px;width:100%;margin:0 auto}
+h2{font-size:26px;line-height:1.25;letter-spacing:-.035em;font-weight:780;margin:0 0 18px}
+h3{font-size:15px;letter-spacing:-.01em;font-weight:750;margin:28px 0 12px}
+.mut{color:var(--mut)}
+.btns{gap:9px;margin-bottom:18px}
+.tbl{border:1px solid var(--bd);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+.row{min-height:52px;padding:11px 16px;gap:12px;border-top:1px solid var(--bd);font-size:13px}
+.row:first-child{border-top:0}
+.row:hover{background:var(--hl)}
+.row.hd{min-height:42px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--panel)}
+.row span:first-child{font-weight:650;overflow-wrap:anywhere}
+.row a{display:inline-flex;align-items:center;justify-content:center;min-width:27px;min-height:27px;border-radius:7px}
+.row a:hover{background:var(--hl);color:var(--ac)}
+.row2{padding:10px 12px;border-top:1px solid var(--bd)}
+.bar{gap:10px;margin-bottom:14px}
+.bar #ti{font-size:22px;font-weight:750;letter-spacing:-.025em;min-height:42px}
+.tb{padding:8px;gap:6px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);margin-bottom:14px}
+.tb button{min-height:34px;padding:5px 10px}
+.cv{gap:18px;grid-template-columns:minmax(0,1fr) 300px}
+.canvas{min-height:66vh;border-radius:15px;padding:clamp(24px,4vw,56px);box-shadow:var(--shadow);line-height:1.8;font-size:16px}
+aside{border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+aside h4{font-size:14px;font-weight:800}
+#mod{backdrop-filter:blur(5px);padding:18px}
+#mod>div{border:1px solid var(--bd);border-radius:18px;padding:24px;box-shadow:var(--shadow-lg)}
+.fm-toolbar{padding:14px;border-radius:14px;box-shadow:var(--shadow);gap:10px}
+.fm-card{border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(15,23,42,.025)}
+.fm-card:hover{box-shadow:var(--shadow);transform:translateY(-3px)}
+.fm-icon{height:82px;border-radius:11px}
+.fm-empty{border-radius:15px;padding:52px 20px}
+.kc{border:1px solid var(--bd);border-radius:13px;padding:12px}
+.kd{border-radius:10px;padding:11px;box-shadow:0 2px 6px rgba(15,23,42,.035)}
+.dt{background:var(--card);border-radius:12px;overflow:hidden}
+.dt th{background:var(--panel);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+mark{border-radius:3px;padding:0 2px}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--ac) 65%,transparent);outline-offset:2px}
+@media(max-width:900px){#side{width:220px;flex-basis:220px}#top{padding:10px 16px}#main{padding:22px 18px 36px}.cv{grid-template-columns:1fr}}
+@media(max-width:680px){
+ #app{height:100dvh;flex-direction:column}
+ #side{width:100%;height:auto;flex:0 0 auto;display:flex;flex-direction:row;align-items:center;gap:5px;padding:8px 10px;border-right:0;border-bottom:1px solid var(--bd);overflow-x:auto;white-space:nowrap}
+ .wsbox{display:flex;align-items:center;padding:0 6px 0 0;min-width:180px;border-right:1px solid var(--bd);margin-right:4px}
+ .wslabel{display:none}.wsbox select{min-width:120px;max-width:145px}.wsadd{min-width:34px;min-height:34px;padding:3px}
+ #side .nav{flex:0 0 auto;padding:8px 10px;font-size:12px}
+ #side .sp,#side>.mut{display:none}
+ #col{min-height:0;flex:1}
+ #top{min-height:60px;padding:9px 12px;gap:7px}
+ #q{min-width:80px;font-size:12px}
+ #top button{padding:7px 9px;font-size:12px}
+ #main{padding:18px 13px 30px}
+ h2{font-size:22px}.row{grid-template-columns:minmax(0,2fr) minmax(0,1fr);padding:10px 11px}.row span:nth-child(n+3){display:none}
+ .fm-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}
+ #auth form{padding:26px 22px}
+}
+
+
+/* PAWANSPACE Dashboard V2 — subtle futuristic motion */
+#main{position:relative;isolation:isolate;background:linear-gradient(145deg,rgba(245,248,255,.92),rgba(248,250,255,.96) 48%,rgba(244,248,255,.92))}
+[data-t=dark] #main{background:linear-gradient(145deg,#111827,#131b2c 55%,#111827)}
+#main:before{content:"";position:fixed;z-index:-1;inset:60px 0 0 232px;pointer-events:none;background:radial-gradient(circle at 78% 14%,rgba(76,120,255,.10),transparent 27%),radial-gradient(circle at 40% 70%,rgba(31,190,173,.07),transparent 30%);animation:ambientDrift 18s ease-in-out infinite alternate}
+@keyframes ambientDrift{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1.2%,1%,0) scale(1.035)}}
+.dash-hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;min-height:218px;padding:30px 36px;margin:0 0 20px;border:1px solid rgba(132,158,220,.22);border-radius:22px;color:#fff;background:linear-gradient(112deg,#172c59 0%,#254b9a 48%,#466de0 100%);box-shadow:0 18px 45px rgba(42,75,150,.16)}
+.dash-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.08) 48%,transparent 70%);transform:translateX(-100%);animation:heroShimmer 9s ease-in-out infinite;pointer-events:none}
+@keyframes heroShimmer{0%,55%{transform:translateX(-100%)}80%,100%{transform:translateX(100%)}}
+.dash-hero-copy{position:relative;z-index:2}.dash-eyebrow{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:800;letter-spacing:.17em;color:#c8d8ff}.pulse-dot,.live-badge i{width:7px;height:7px;border-radius:50%;background:#53e2c0;box-shadow:0 0 0 4px rgba(83,226,192,.14);animation:pulseGlow 2.4s infinite}
+@keyframes pulseGlow{50%{box-shadow:0 0 0 8px rgba(83,226,192,0)}}
+.dash-hero h2{font-size:clamp(25px,3vw,34px);letter-spacing:-.035em;margin:12px 0 5px;color:#fff}.dash-hero p{margin:0;color:#d7e3ff;font-size:14px}.dash-quick{display:flex;gap:9px;flex-wrap:wrap;margin-top:21px}.dash-quick button{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.10);color:#fff;backdrop-filter:blur(8px);padding:9px 14px;border-radius:10px}.dash-quick button.pri{background:#fff;color:#24489b;border-color:#fff}.dash-quick button:hover{transform:translateY(-2px);background:rgba(255,255,255,.2)}.dash-quick button.pri:hover{background:#edf2ff}
+.dash-hero-art{position:relative;z-index:1;width:210px;height:160px;display:grid;place-items:center;flex:0 0 210px}.dash-orb{position:absolute;border-radius:50%;filter:blur(1px);pointer-events:none}.orb-a{width:230px;height:230px;right:8%;top:-100px;background:radial-gradient(circle,rgba(119,177,255,.3),rgba(119,177,255,0) 68%);animation:orbFloat 8s ease-in-out infinite alternate}.orb-b{width:180px;height:180px;right:28%;bottom:-110px;background:radial-gradient(circle,rgba(82,235,208,.2),transparent 70%);animation:orbFloat 10s ease-in-out infinite alternate-reverse}@keyframes orbFloat{to{transform:translate(12px,-14px) scale(1.12)}}
+.dash-glass{width:150px;height:124px;padding:12px;border:1px solid rgba(255,255,255,.34);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.07));box-shadow:0 18px 35px rgba(9,24,60,.25);backdrop-filter:blur(12px);transform:rotate(7deg);animation:glassFloat 6s ease-in-out infinite}.glass-top{display:flex;gap:5px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.2)}.glass-top span{width:5px;height:5px;border-radius:50%;background:#dbe7ff}.glass-lines{display:grid;gap:8px;padding-top:12px}.glass-lines i{height:5px;border-radius:9px;background:rgba(255,255,255,.5)}.glass-lines i:nth-child(2){width:78%}.glass-lines i:nth-child(3){width:88%}.glass-lines i:nth-child(4){width:54%}.glass-chip{position:absolute;right:-19px;bottom:12px;padding:6px 9px;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(18,42,94,.65);font-size:8px;font-weight:800;letter-spacing:.12em;color:#dceaff}@keyframes glassFloat{50%{transform:translateY(-8px) rotate(4deg)}}
+.dash-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}.stat-card{position:relative;text-align:left;display:grid;grid-template-columns:42px 1fr;column-gap:12px;align-items:center;padding:17px 18px;min-height:122px;border:1px solid #e5eaf4;border-radius:16px;background:rgba(255,255,255,.88);box-shadow:0 7px 22px rgba(32,55,100,.045);transition:transform .2s,box-shadow .2s,border-color .2s}.stat-card:hover{transform:translateY(-4px);border-color:#c8d5f5;box-shadow:0 14px 30px rgba(32,55,100,.10)}.stat-icon{grid-row:1/4;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;font-size:20px}.si-blue{background:#e9efff;color:#4168df}.si-violet{background:#f0ebff;color:#7958d8}.si-amber{background:#fff4df;color:#c58a27}.si-green{background:#e4f8ef;color:#1b9c72}.stat-label{font-size:12px;color:#687791;font-weight:650}.stat-card strong{font-size:27px;line-height:1.1;color:#17243b;letter-spacing:-.04em}.stat-card small{font-size:10px;color:#8a96aa}.stat-arrow{position:absolute;right:15px;top:13px;color:#a1aec4;font-size:15px}
+.dash-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:16px;margin-bottom:16px}.dash-bottom{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(270px,.8fr);gap:16px}.dash-panel{min-width:0;padding:18px 19px;border:1px solid #e5eaf4;border-radius:16px;background:rgba(255,255,255,.9);box-shadow:0 7px 22px rgba(32,55,100,.04)}.dash-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.dash-panel-head h3{margin:0;font-size:15px;color:#1c2940}.dash-panel-head p{margin:3px 0 0;color:#8793a8;font-size:11px}.dash-panel-head>button{font-size:11px;color:#4168df;border:0;background:transparent}.live-badge{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:20px;background:#eaf8f3;color:#278d70;font-size:9px;font-weight:800;letter-spacing:.08em}.live-badge i{width:6px;height:6px;box-shadow:none}.dash-panel .tbl{border:0;border-radius:0;box-shadow:none}.dash-panel .row{grid-template-columns:minmax(0,2fr) minmax(60px,.8fr) minmax(70px,1fr) auto;padding:11px 8px;font-size:12px}.dash-panel .row.hd{display:none}.dash-panel .row span:nth-child(n+3){display:block}.dash-panel .row span:last-child{white-space:nowrap}.activity-list{display:grid}.activity-item{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #edf0f6;min-width:0}.activity-item:last-child{border-bottom:0}.activity-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#edf2ff;font-size:15px}.ai-1{background:#f0ebff}.ai-2{background:#e8f8f2}.ai-3{background:#fff4e5}.activity-copy{display:grid;min-width:0;gap:2px}.activity-copy b{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#26334b}.activity-copy small{font-size:9px;color:#8a96aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.activity-arrow{margin-left:auto;color:#a4afc2}.dash-empty{display:grid;justify-items:center;gap:5px;padding:24px 8px;color:#8290a7}.dash-empty>span{font-size:25px;color:#91a6dc}.dash-empty b{font-size:12px;color:#53627b}.dash-empty small{font-size:10px}.quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.quick-grid button{display:grid;justify-items:start;gap:5px;padding:13px 12px;border:1px solid #edf0f6;border-radius:12px;background:#fbfcff;text-align:left}.quick-grid button:hover{border-color:#cbd8f7;background:#f5f8ff;transform:translateY(-2px)}.quick-grid button>span{font-size:20px;color:#5274d9}.quick-grid b{font-size:11px;color:#26334b}.quick-grid small{font-size:9px;color:#8995a8}.snapshot-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#edf2ff;color:#5274d9}.snapshot-row{display:flex;justify-content:space-between;margin:12px 0 6px;font-size:11px;color:#66748c}.snapshot-row b{color:#26334b}.snapshot-track{height:6px;border-radius:8px;background:#edf1f8;overflow:hidden}.snapshot-track i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#4d75e8,#7b9cff);transition:width .6s}.snapshot-track.violet i{background:linear-gradient(90deg,#9272e9,#c2a8ff)}.snapshot-foot{margin-top:13px;padding-top:10px;border-top:1px solid #edf0f6;color:#98a2b3;font-size:9px}
+[data-t=dark] .dash-panel,[data-t=dark] .stat-card{background:rgba(27,36,55,.92);border-color:#2c3a55}[data-t=dark] .dash-panel-head h3,[data-t=dark] .stat-card strong,[data-t=dark] .activity-copy b,[data-t=dark] .quick-grid b,[data-t=dark] .snapshot-row b{color:#e4ebfa}[data-t=dark] .stat-label,[data-t=dark] .stat-card small,[data-t=dark] .activity-copy small,[data-t=dark] .dash-panel-head p,[data-t=dark] .snapshot-row{color:#9aa9c3}[data-t=dark] .quick-grid button{background:#202b41;border-color:#33415c}[data-t=dark] .activity-item{border-color:#2c3a55}[data-t=dark] .dash-panel .row{color:#e4ebfa}[data-t=dark] .dash-panel .row.hd{background:#202b41}[data-t=dark] .snapshot-track{background:#303d55}
+@media(max-width:1050px){.dash-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-hero-art{opacity:.65}.dash-grid,.dash-bottom{grid-template-columns:1fr}}
+@media(max-width:650px){.dash-hero{padding:23px 20px;min-height:220px}.dash-hero-art{position:absolute;right:-32px;bottom:0;opacity:.25}.dash-hero h2{font-size:25px}.dash-stats{gap:9px}.stat-card{padding:13px;grid-template-columns:34px 1fr;column-gap:8px;min-height:108px}.stat-icon{width:34px;height:34px}.stat-card strong{font-size:23px}.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panel{padding:14px}.dash-panel .row{grid-template-columns:minmax(0,1.5fr) minmax(60px,.7fr)!important}.dash-panel .row span:nth-child(n+3){display:none!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+
+/* PAWANSPACE Editor V3 */
+.editor-shell{max-width:1500px;margin:0 auto}
+.editor-topbar{position:sticky;top:0;z-index:12;padding:12px 14px;border:1px solid var(--bd);border-radius:15px;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(25,45,80,.07)}
+.editor-topbar .bar{margin:0;gap:9px}.editor-topbar #ti{flex:1;min-width:180px}
+.editor-status{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:30px;background:var(--hl);font-size:12px;font-weight:650;white-space:nowrap}
+.editor-status:before{content:"";width:7px;height:7px;border-radius:50%;background:#20b486;box-shadow:0 0 0 4px color-mix(in srgb,#20b486 15%,transparent)}
+.editor-toolbar{position:sticky;top:70px;z-index:11;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0;padding:9px;border:1px solid var(--bd);border-radius:13px;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(12px);box-shadow:0 7px 22px rgba(25,45,80,.05)}
+.editor-toolbar .tool-group{display:flex;align-items:center;gap:4px;padding-right:7px;margin-right:3px;border-right:1px solid var(--bd)}
+.editor-toolbar .tool-group:last-child{border:0;margin:0;padding:0}
+.editor-toolbar button{min-width:35px;height:34px;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:650}
+.editor-toolbar button:hover{background:var(--hl);transform:translateY(-1px)}
+.editor-toolbar button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.editor-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start}
+.editor-paper-wrap{min-width:0;padding:18px;border:1px solid var(--bd);border-radius:17px;background:var(--panel)}
+.editor-paper{min-height:68vh;max-width:920px;margin:0 auto;padding:clamp(26px,5vw,68px);border:1px solid var(--bd);border-radius:12px;background:var(--card);box-shadow:0 12px 35px rgba(20,35,65,.06)}
+.editor-paper.ProseMirror{outline:none}.editor-paper.ProseMirror:focus{border-color:color-mix(in srgb,var(--ac) 45%,var(--bd))}
+.editor-paper h1{font-size:2.1rem;letter-spacing:-.04em}.editor-paper h2{font-size:1.55rem;letter-spacing:-.025em}.editor-paper h3{font-size:1.2rem}
+.editor-paper p{line-height:1.85}.editor-paper pre{overflow:auto;padding:16px;border-radius:10px;background:var(--panel)}
+.editor-paper blockquote{margin:18px 0;padding:8px 18px;border-left:4px solid var(--ac);background:var(--hl);border-radius:0 9px 9px 0}
+.editor-paper hr{border:0;border-top:1px solid var(--bd);margin:28px 0}
+.editor-paper a{color:var(--ac);text-decoration:underline;text-underline-offset:3px}
+.editor-side{position:sticky;top:145px;padding:16px;border:1px solid var(--bd);border-radius:14px;background:var(--card);box-shadow:0 8px 24px rgba(25,45,80,.05)}
+.editor-side h4{margin:0 0 12px;font-size:14px}.editor-side .cm{padding:10px 0;border-bottom:1px solid var(--bd);overflow-wrap:anywhere}
+.editor-side .cm:last-child{border-bottom:0}.editor-side input{width:100%;margin-top:10px}
+.editor-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 2px 0;color:var(--mut);font-size:11px}
+.editor-footer span{display:inline-flex;gap:6px;align-items:center}
+.editor-focus #side,.editor-focus #top{display:none!important}.editor-focus #main{padding:14px 3vw}.editor-focus .editor-layout{grid-template-columns:minmax(0,1fr) 290px}
+@media(max-width:980px){.editor-layout{grid-template-columns:1fr}.editor-side{position:static}.editor-toolbar{top:0}.editor-focus .editor-layout{grid-template-columns:1fr}}
+@media(max-width:620px){.editor-paper-wrap{padding:7px}.editor-paper{padding:22px 17px}.editor-toolbar .tool-group{border:0;padding:0;margin:0}.editor-topbar .bar{flex-wrap:wrap}.editor-topbar #ti{min-width:100%;order:2}}
+
+/* Advanced collaborative editor nodes */
+.editor-paper .ProseMirror img{display:block;max-width:100%;height:auto;border-radius:10px;margin:14px auto;box-shadow:0 3px 14px rgba(20,35,60,.10)}
+.editor-paper .ProseMirror table{border-collapse:collapse;table-layout:fixed;width:100%;margin:16px 0;overflow:hidden}
+.editor-paper .ProseMirror th,.editor-paper .ProseMirror td{border:1px solid var(--bd);padding:9px 11px;vertical-align:top;min-width:70px}
+.editor-paper .ProseMirror th{background:var(--panel);font-weight:700}
+.editor-paper .ProseMirror .selectedCell:after{background:var(--hl);content:"";inset:0;pointer-events:none;position:absolute}
+.editor-paper .ProseMirror td,.editor-paper .ProseMirror th{position:relative}
+.editor-paper .ProseMirror ul[data-type=taskList]{list-style:none;padding:0}
+.editor-paper .ProseMirror li[data-type=taskItem]{display:flex;align-items:flex-start;gap:9px}
+.editor-paper .ProseMirror li[data-type=taskItem]>label{flex:0 0 auto;margin-top:4px;user-select:none}
+.editor-paper .ProseMirror li[data-type=taskItem]>div{flex:1}
+.editor-paper .ProseMirror li[data-type=taskItem] input[type=checkbox]{accent-color:var(--ac);width:16px;height:16px}
+.editor-paper .ProseMirror li[data-type=taskItem][data-checked=true] > div{color:var(--mut);text-decoration:line-through}
+
+
+/* Knowledge Hub + global navigation */
+.kh-hero{padding:22px 24px;border:1px solid var(--bd);border-radius:16px;background:linear-gradient(120deg,var(--card),var(--hl));margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:18px}.kh-hero h2{font-size:25px;margin:4px 0}.kh-hero p{margin:0;color:var(--mut)}.kh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:13px}.kh-card{border:1px solid var(--bd);border-radius:12px;background:var(--card);padding:15px;min-width:0}.kh-card:hover{border-color:var(--ac);box-shadow:0 5px 18px #0000000a}.kh-card h3{margin:4px 0 8px;cursor:pointer}.kh-meta{font-size:12px;color:var(--mut);display:flex;gap:8px;flex-wrap:wrap}.kh-tag{display:inline-block;border-radius:20px;padding:2px 8px;background:var(--hl);font-size:11px;margin:5px 4px 0 0}.kh-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.kh-toolbar input{min-width:180px;flex:1}.crumbbar{font-size:12px;color:var(--mut);margin:0 0 12px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}.crumbbar a:hover{color:var(--ac);text-decoration:underline}.nav-search{margin:10px 8px 14px;width:calc(100% - 16px);text-align:left;background:var(--card);color:var(--mut)}.cmd-backdrop{position:fixed;inset:0;background:#10181699;z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:12vh 16px 20px}.cmd-box{width:min(680px,100%);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 22px 70px #0005;overflow:hidden}.cmd-box input{width:100%;border:0;border-radius:0;border-bottom:1px solid var(--bd);padding:17px 20px;font-size:16px;outline:0}.cmd-results{max-height:55vh;overflow:auto;padding:8px}.cmd-item{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer}.cmd-item:hover{background:var(--hl)}.cmd-item small{display:block;color:var(--mut)}.kh-empty{padding:28px;text-align:center;border:1px dashed var(--bd);border-radius:12px;color:var(--mut)}
+/* Knowledge Hub KPI layout refinement */
+.kh-hero+.dash-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0 18px}
+.kh-hero+.dash-stats .stat-card{min-width:0;min-height:112px;padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;column-gap:12px;row-gap:5px;text-align:left}
+.kh-hero+.dash-stats .stat-label{font-size:12px;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+.kh-hero+.dash-stats .stat-card strong{grid-column:2;grid-row:1 / span 2;font-size:28px;line-height:1.1;align-self:center}
+.kh-hero+.dash-stats .stat-card small{grid-column:1;grid-row:2;line-height:1.35;max-width:150px;white-space:normal}
+@media(max-width:900px){.kh-hero+.dash-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.kh-hero+.dash-stats{grid-template-columns:1fr}}
+.cmd-item.active{background:var(--hl);outline:1px solid var(--ac)}.cmd-hint{padding:7px 14px;border-top:1px solid var(--bd);font-size:11px;color:var(--mut)}.search-history{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 14px}.search-history button{font-size:12px;padding:6px 10px;border-radius:20px}@media(max-width:760px){.kh-hero{align-items:flex-start;flex-direction:column}.kh-toolbar>*{width:100%}}
+
+</style></head><body>
+<div id="auth"><form onsubmit="return false"><h1>Collaborative Workspace</h1>
+<span class="mut">Documents, files and team knowledge in one place.</span>
+<input id="nm" placeholder="Name (for new accounts)"><input id="em" type="email" placeholder="Email"><input id="pw" type="password" placeholder="Password (min 6 characters)">
+<button class="pri" onclick="auth('login')">Log in</button><button onclick="auth('register')">Create account</button><span id="err" style="color:#c0392b"></span></form></div>
+<div id="app"><nav id="side"></nav><div id="col"><div id="top"><input id="q" placeholder="Search documents, files, folders and pages…" onkeydown="if(event.key=='Enter')doSearch()"><button class="pri" onclick="newItem('doc')">New document</button><button onclick="pickFile()">Upload file</button></div><main id="main"></main></div></div>
+<div id="cmd" class="cmd-backdrop" onclick="if(event.target.id==='cmd')closeCommandPalette()"><div class="cmd-box"><input id="cmdq" placeholder="Search documents, pages, files…  (Esc to close)" autocomplete="off"><div id="cmdresults" class="cmd-results"><div class="mut" style="padding:12px">Start typing to search across all your workspaces.</div></div></div></div>
+<div id="mod" onclick="if(event.target.id=='mod')closeMod()"><div id="modb"></div></div>
+<input type="file" id="fi" multiple hidden onchange="upl(this)"><input type="file" id="ii" accept="image/*" hidden onchange="imgPick(this)">
+<script>
+document.documentElement.dataset.t=localStorage.th||'light';
+let T=localStorage.t,ME,WS=[],W,MEM=[],TEAMS=[],items=[],sharedItems=[],knowledgeItems=[],view='home',previousView='home',cwd=null,cur=null,sock,saveT,sendT,lastEdit=0,sq={kind:'',owner:'',since:''},res=[];
+let crdtEditor=null,crdtProvider=null,crdtDoc=null,crdtStartingId=null;
+
+// Safely tear down the previous document connection before navigating.
+function closeSock(){
+  if(sock){
+    try{
+      sock.onopen=null;
+      sock.onmessage=null;
+      sock.onerror=null;
+      sock.onclose=null;
+      if(sock.readyState===WebSocket.OPEN || sock.readyState===WebSocket.CONNECTING){
+        sock.close(1000,'PAWANSPACE navigation');
+      }
+    }catch(e){console.warn('WebSocket cleanup:',e)}
+    sock=null;
+  }
+
+  // Destroy the previous Yjs/Tiptap session, if one is active.
+  try{
+    if(window.PAWANSPACECRDT &&
+       typeof window.PAWANSPACECRDT.destroy==='function'){
+      window.PAWANSPACECRDT.destroy();
+    }
+  }catch(e){console.warn('CRDT cleanup:',e)}
+
+  crdtEditor=null;
+  crdtProvider=null;
+  crdtDoc=null;
+  crdtStartingId=null;
+}
+let cmdTimer=null,cmdResults=[],globalSearchText='';
+let fmState={query:'',type:'all',sort:'name',mode:localStorage.fmMode||'grid'};
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),jsArg=v=>esc(JSON.stringify(String(v??'')));
+const ic={doc:'📄',page:'📘',folder:'📁',file:'📎',board:'📋',database:'🗃'},fmt=n=>n>1e6?(n/1e6).toFixed(1)+' MB':Math.ceil(n/1e3)+' KB',ago=t=>new Date(t*1000).toLocaleString();
+const TBL='<table><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table><p><br></p>';
+const live=()=>items.filter(i=>!i.trashed),isAdmin=()=>W&&W.role=='admin';
+async function api(p,m='GET',b){const fd=b instanceof FormData;const r=await fetch('/api'+p,{method:m,headers:{Authorization:'Bearer '+T,...(b&&!fd?{'Content-Type':'application/json'}:{})},body:fd?b:b&&JSON.stringify(b)});
+ if(!r.ok){if(r.status==401&&ME){logout()}let e=await r.json().catch(()=>({}));throw new Error(e.detail||r.statusText)}return r.json()}
+const fail=e=>alert(e.message||e);
+async function auth(k){try{const d=await api('/'+k,'POST',{email:$('#em').value,password:$('#pw').value,name:$('#nm').value});T=d.token;localStorage.t=T;boot()}catch(e){$('#err').textContent=e.message}}
+function logout(){if(T)fetch('/api/logout',{method:'POST',headers:{Authorization:'Bearer '+T}});localStorage.removeItem('t');T=null;ME=null;closeSock();gate(true)}
+function gate(a){$('#auth').style.display=a?'flex':'none';$('#app').style.display=a?'none':'flex'}
+async function boot(){if(!T)return gate(true);try{ME=await api('/me');gate(false);WS=await api('/ws');if(!Array.isArray(WS))throw new Error('Workspace response was invalid.');if(!WS.length){await api('/ws','POST',{name:ME.name+"'s workspace"});WS=await api('/ws')}W=WS.find(x=>x.id==localStorage.w)||WS[0];if(!W)throw new Error('No workspace is available for this account.');await reload();await go('home')}catch(e){console.error('PAWANSPACE boot failed:',e);if($('#err'))$('#err').textContent=e.message||'Unable to load workspace.';gate(true)}}
+async function reload(){items=await api(`/items?ws=${W.id}&trashed=all`);MEM=await api(`/ws/${W.id}/members`);TEAMS=await api(`/ws/${W.id}/teams`)}
+async function go(v){
+ if(cur&&view=='editor')await flush();
+ view=v;cur=null;closeSock();
+ if(v==='shared'){
+  sharedItems=[];
+  const results=await Promise.allSettled(WS.map(w=>api(`/items?ws=${encodeURIComponent(w.id)}&trashed=all`)));
+  const seen=new Set();
+  for(const result of results){
+   if(result.status!=='fulfilled'||!Array.isArray(result.value))continue;
+   for(const item of result.value){
+    if(item.shared&&item.owner!==ME.id&&!item.trashed&&!seen.has(item.id)){
+     seen.add(item.id);sharedItems.push(item);
+    }
+   }
+  }
+ }
+ render();
+}
+const NAV=[['home','🏠 Home'],['knowledge','✦ Knowledge Hub'],['search','⌕ Search'],['docs','📄 Documents'],['files','🗂 My Files'],['shared','🤝 Shared with Me'],['wiki','📚 Team Wiki'],['boards','📋 Boards & Tables'],['favs','⭐ Favorites'],['trash','🗑 Trash'],['settings','⚙ Settings']];
+function render(){$('#side').innerHTML=`<div class="wsbox"><span class="wslabel">WORKSPACE</span><select aria-label="Select workspace" onchange="swWs(this.value)">${WS.map(w=>`<option value="${w.id}" ${w.id==W.id?'selected':''}>${esc(w.name)}</option>`).join('')}</select><button class="wsadd" title="Create workspace" aria-label="Create workspace" onclick="newWs()">＋</button></div>`+
+ `<button class="nav-search" onclick="openCommandPalette()">⌕  Search anything <span style="float:right">Ctrl K</span></button>`+NAV.map(([k,l])=>`<a class="nav ${view==k?'on':''}" onclick="go('${k}')">${l}</a>`).join('')+`<span class="sp"></span><span class="mut" style="padding:6px 10px">${esc(ME.name)} · ${W.role}</span><a class="nav" onclick="theme()">🌓 Light / dark</a><a class="nav" onclick="logout()">Log out</a>`;
+ $('#main').innerHTML=V[view]();if(view==='editor'&&cur){$('#main').insertAdjacentHTML('afterbegin',itemBreadcrumb(cur));loadCm();}if(view==='knowledge')loadKnowledge();if(view=='settings'&&isAdmin())loadAud();if(view==='home')loadDashboardExtras()}
+function itemBreadcrumb(item){
+ const chain=[];let p=item?.parent,guard=0;
+ while(p&&guard++<50){const parent=items.find(x=>x.id===p)||sharedItems.find(x=>x.id===p);if(!parent)break;chain.unshift(parent);p=parent.parent}
+ return `<div class="crumbbar"><a onclick="go('home')">⌂ Home</a>${chain.map(x=>`<span>›</span><a onclick="open_('${x.id}')">${esc(x.title)}</a>`).join('')}<span>›</span><b>${esc(item?.title||'Untitled')}</b></div>`;
+}
+async function loadKnowledge(){
+ if(view!=='knowledge'||!W)return;
+ try{knowledgeItems=await api(`/knowledge?ws=${encodeURIComponent(W.id)}`);if(view==='knowledge'){$('#knowledge-root')?.replaceWith(Object.assign(document.createElement('div'),{id:'knowledge-root',innerHTML:knowledgeView()}));}}
+ catch(e){const root=$('#knowledge-root');if(root)root.innerHTML=`<div class="kh-empty">Knowledge Hub could not load: ${esc(e.message)}<br><small>Confirm the Knowledge/Search backend V1 is installed.</small></div>`}
+}
+function knowledgeView(){
+ const cats=[...new Set(knowledgeItems.map(x=>x.category||'General'))].sort();
+ const tags=[...new Set(knowledgeItems.flatMap(x=>x.tags||[]))].sort();
+ const qv=$('#khq')?.value||'',cat=$('#khcat')?.value||'',tag=$('#khtag')?.value||'';
+ let rows=knowledgeItems.filter(x=>(!cat||(x.category||'General')===cat)&&(!tag||(x.tags||[]).includes(tag))&&(!qv||`${x.title} ${x.department} ${x.project} ${(x.tags||[]).join(' ')}`.toLowerCase().includes(qv.toLowerCase())));
+ return `<section class="kh-hero"><div><div class="dash-eyebrow">✦ TEAM KNOWLEDGE</div><h2>Knowledge Hub</h2><p>One organized home for documents, wiki pages, policies and project knowledge.</p></div><div class="btns"><button onclick="newItem('page')">＋ New page</button><button class="pri" onclick="newItem('doc')">＋ New document</button></div></section>
+ <div class="dash-stats"><div class="stat-card"><span class="stat-label">Knowledge items</span><strong>${knowledgeItems.length}</strong><small>Documents and wiki pages</small></div><div class="stat-card"><span class="stat-label">Categories</span><strong>${cats.length}</strong><small>Organized knowledge groups</small></div><div class="stat-card"><span class="stat-label">Tagged items</span><strong>${knowledgeItems.filter(x=>(x.tags||[]).length).length}</strong><small>Discoverable by tags</small></div><div class="stat-card"><span class="stat-label">Pinned</span><strong>${knowledgeItems.filter(x=>x.pinned).length}</strong><small>Important references</small></div></div>
+ <div class="kh-toolbar"><input id="khq" placeholder="Filter title, project, department or tag…" value="${esc(qv)}" oninput="const r=document.querySelector('#knowledge-results');if(r)r.innerHTML=knowledgeCards()"><select id="khcat" onchange="const r=document.querySelector('#knowledge-results');if(r)r.innerHTML=knowledgeCards()"><option value="">All categories</option>${cats.map(x=>`<option ${cat===x?'selected':''}>${esc(x)}</option>`).join('')}</select><select id="khtag" onchange="const r=document.querySelector('#knowledge-results');if(r)r.innerHTML=knowledgeCards()"><option value="">All tags</option>${tags.map(x=>`<option ${tag===x?'selected':''}>${esc(x)}</option>`).join('')}</select><button onclick="loadKnowledge()">↻ Refresh</button></div><div id="knowledge-results">${knowledgeCards(rows)}</div>`;
+}
+function knowledgeCards(rows){
+ rows=rows||knowledgeItems;const cat=$('#khcat')?.value||'',tag=$('#khtag')?.value||'',qv=$('#khq')?.value||'';
+ rows=rows.filter(x=>(!cat||(x.category||'General')===cat)&&(!tag||(x.tags||[]).includes(tag))&&(!qv||`${x.title} ${x.department||''} ${x.project||''} ${(x.tags||[]).join(' ')}`.toLowerCase().includes(qv.toLowerCase())));
+ if(!rows.length)return '<div class="kh-empty">No knowledge items match these filters. Add metadata to a document or create a wiki page.</div>';
+ return `<div class="kh-grid">${rows.map(x=>`<article class="kh-card"><div class="kh-meta"><span>${ic[x.kind]||'📄'} ${x.kind==='page'?'Wiki page':'Document'}</span><span>·</span><span>${esc(x.category||'General')}</span>${x.pinned?'<span>★ Pinned</span>':''}</div><h3 onclick="open_('${x.id}')">${esc(x.title)}</h3><div class="kh-meta">${x.department?`<span>Dept: ${esc(x.department)}</span>`:''}${x.project?`<span>Project: ${esc(x.project)}</span>`:''}<span>${esc(x.oname||'')}</span></div><div>${(x.tags||[]).map(t=>`<span class="kh-tag">#${esc(t)}</span>`).join('')}</div><div class="btns" style="margin:12px 0 0"><button onclick="open_('${x.id}')">Open</button>${x.perm==='edit'?`<button onclick="editKnowledgeMeta('${x.id}')">Manage metadata</button>`:''}</div></article>`).join('')}</div>`;
+}
+async function editKnowledgeMeta(id){
+ try{const m=await api(`/knowledge/${id}`);const item=items.find(x=>x.id===id)||knowledgeItems.find(x=>x.id===id);mod(`<h3>Knowledge details</h3><p class="mut">${esc(item?.title||'Document')}</p><label>Category</label><input id="kmcat" value="${esc(m.category||'General')}" placeholder="General, Policy, HR…" style="width:100%;margin:4px 0 10px"><label>Department</label><input id="kmdept" value="${esc(m.department||'')}" placeholder="Engineering, HR, Finance…" style="width:100%;margin:4px 0 10px"><label>Project</label><input id="kmproj" value="${esc(m.project||'')}" placeholder="Project name" style="width:100%;margin:4px 0 10px"><label>Tags (comma separated)</label><input id="kmtags" value="${esc((m.tags||[]).join(', '))}" placeholder="onboarding, roadmap, policy" style="width:100%;margin:4px 0 10px"><label><input id="kmpin" type="checkbox" ${m.pinned?'checked':''}> Pin this knowledge item</label><div class="btns" style="margin-top:16px"><button class="pri" onclick="saveKnowledgeMeta('${id}')">Save metadata</button></div>`)}catch(e){fail(e)}
+}
+async function saveKnowledgeMeta(id){try{const b={category:$('#kmcat').value.trim()||'General',department:$('#kmdept').value.trim(),project:$('#kmproj').value.trim(),tags:$('#kmtags').value.split(',').map(x=>x.trim()).filter(Boolean),pinned:$('#kmpin').checked};await api(`/knowledge/${id}`,'PUT',b);closeMod();await loadKnowledge();}catch(e){fail(e)}}
+function getSearchHistory(){try{return JSON.parse(localStorage.getItem('ps.searchHistory')||'[]').filter(x=>typeof x==='string').slice(0,8)}catch{return []}}
+function rememberSearch(qv){const h=getSearchHistory().filter(x=>x.toLowerCase()!==qv.toLowerCase());h.unshift(qv);localStorage.setItem('ps.searchHistory',JSON.stringify(h.slice(0,8)))}
+function showSearchHistory(){const root=$('#cmdresults');if(!root)return;const h=getSearchHistory();root.innerHTML=h.length?`<div class="mut" style="padding:8px 12px">Recent searches</div>`+h.map((x,i)=>`<div class="cmd-item" data-index="${i}" onclick="$('#cmdq').value=${jsArg(x)};commandSearch(${jsArg(x)})"><span>◷</span><span>${esc(x)}</span></div>`).join(''):'<div class="mut" style="padding:12px">Start typing to search across all your workspaces. Recent searches will appear here.</div>';cmdResults=[];cmdActive=-1}
+function openCommandPalette(){const el=$('#cmd');if(!el)return;el.style.display='flex';$('#cmdq').value='';showSearchHistory();setTimeout(()=>$('#cmdq').focus(),20)}
+function closeCommandPalette(){$('#cmd').style.display='none';clearTimeout(cmdTimer);cmdActive=-1}
+let cmdActive=-1;
+function paintCommandSelection(){const nodes=[...document.querySelectorAll('#cmdresults .cmd-item')];nodes.forEach((n,i)=>n.classList.toggle('active',i===cmdActive));nodes[cmdActive]?.scrollIntoView({block:'nearest'});}
+function moveCommandSelection(delta){const nodes=[...document.querySelectorAll('#cmdresults .cmd-item')];if(!nodes.length)return;cmdActive=(cmdActive+delta+nodes.length)%nodes.length;paintCommandSelection()}
+function activateCommandSelection(){const nodes=[...document.querySelectorAll('#cmdresults .cmd-item')];if(!nodes.length)return;const n=nodes[Math.max(0,cmdActive)];if(n)n.click()}
+async function commandSearch(qv){const root=$('#cmdresults');if(!root)return;if(!qv.trim()){showSearchHistory();return}root.innerHTML='<div class="mut" style="padding:12px">Searching…</div>';try{cmdResults=await api('/search?'+new URLSearchParams({q:qv,limit:'12'}));cmdActive=-1;root.innerHTML=cmdResults.length?cmdResults.map((x,i)=>`<div class="cmd-item" data-index="${i}" onclick="rememberSearch(${jsArg(qv)});closeCommandPalette();openSearchResult('${x.id}')"><span>${ic[x.kind]||'📄'}</span><span><b>${esc(x.title)}</b><small>${esc(x.oname||'')} · ${esc(x.category||x.kind)} ${x.snip?'· '+esc(x.snip.slice(0,90)):''}</small></span></div>`).join(''):'<div class="mut" style="padding:12px">No matching items.</div>'}catch(e){root.innerHTML=`<div class="mut" style="padding:12px">${esc(e.message)}</div>`}}
+async function openSearchResult(id){const x=cmdResults.find(i=>i.id===id)||res.find(i=>i.id===id);if(x?.ws&&W?.id!==x.ws){const w=WS.find(a=>a.id===x.ws);if(w){W=w;localStorage.w=w.id;await reload()}}let item=items.find(i=>i.id===id)||sharedItems.find(i=>i.id===id);if(!item){try{item=await api('/items/'+id);items.push(item)}catch(e){fail(e);return}}open_(id)}
+function globalSearchFilters(){const f=(k,opts)=>`<select id="gs-${k}">${opts.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>`;const hist=getSearchHistory();return `<div class="kh-toolbar"><input id="gsq" value="${esc(globalSearchText)}" placeholder="Search all accessible workspaces…" onkeydown="if(event.key==='Enter')runGlobalSearch()">${f('kind',[['','Any type'],['doc','Documents'],['page','Pages'],['file','Files'],['folder','Folders'],['board','Boards'],['database','Tables']])}<input id="gs-owner" placeholder="Owner name or email"><input id="gs-cat" placeholder="Category"><input id="gs-dept" placeholder="Department"><input id="gs-tag" placeholder="Tag"><label style="display:flex;align-items:center;gap:6px;font-size:12px">Updated after <input id="gs-since" type="date" style="min-width:145px"></label><button class="pri" onclick="runGlobalSearch()">Search</button></div>${hist.length?`<div class="search-history"><span class="mut">Recent:</span>${hist.slice(0,5).map(x=>`<button onclick="searchFromHistory(${JSON.stringify(x)})">◷ ${esc(x)}</button>`).join('')}</div>`:''}`}
+async function searchFromHistory(qv){globalSearchText=qv;try{const p=new URLSearchParams({q:qv});res=await api('/search?'+p);rememberSearch(qv);view='search';cur=null;closeSock();render()}catch(e){fail(e)}}
+async function runGlobalSearch(){const qv=$('#gsq')?.value.trim()||'';if(!qv)return;globalSearchText=qv;const p=new URLSearchParams({q:qv});for(const k of ['kind','owner','cat','dept','tag','since']){const el=$('#gs-'+k);if(el?.value.trim())p.set(({cat:'category',dept:'department',tag:'tag'})[k]||k,el.value.trim())}try{res=await api('/search?'+p);rememberSearch(qv);if(cur&&view==='editor')await flush();view='search';cur=null;closeSock();render()}catch(e){fail(e)}}
+async function loadDashboardExtras(){
+ const root=$('#main');if(!root||view!=='home')return;
+ const cards=root.querySelectorAll('.dash-stats .stat-card');
+ // Cross-workspace shared count: use the same permission-filtered endpoint as Shared with Me.
+ try{
+  const results=await Promise.allSettled(WS.map(w=>api(`/items?ws=${encodeURIComponent(w.id)}&trashed=all`)));
+  const seen=new Set();
+  for(const result of results){if(result.status!=='fulfilled'||!Array.isArray(result.value))continue;
+   for(const item of result.value){if(item.shared&&item.owner!==ME.id&&!item.trashed)seen.add(item.id)}
+  }
+  if(cards[2]){const n=cards[2].querySelector('strong');if(n)n.textContent=seen.size;
+   const small=cards[2].querySelector('small');if(small)small.textContent='Items shared across your workspaces';}
+ }catch(e){console.warn('Dashboard shared count unavailable',e)}
+ // Recent activity uses the existing audit endpoint. It is intentionally admin-only;
+ // non-admin users retain the permission-filtered recent-item fallback already rendered.
+ if(isAdmin()){
+  try{
+   const auditRows=await api(`/ws/${encodeURIComponent(W.id)}/audit`);
+   const panel=root.querySelector('.dash-activity');
+   if(panel&&view==='home'){
+    const head=panel.querySelector('.dash-panel-head');
+    const body=auditRows.length?`<div class="activity-list">${auditRows.slice(0,6).map((a,n)=>`<div class="activity-item"><span class="activity-icon ai-${n%4}">✦</span><span class="activity-copy"><b>${esc(a.act||'Workspace update')}</b><small>${esc(a.name||'Team member')} · ${a.ts?ago(a.ts):'Recently'}</small></span></div>`).join('')}</div>`:`<div class="dash-empty"><span>✧</span><b>No audit activity yet</b><small>Workspace actions will appear here when recorded.</small></div>`;
+    panel.innerHTML=(head?head.outerHTML:'')+body;
+   }
+  }catch(e){console.warn('Audit activity unavailable; using recent item updates',e)}
+ }
+ // Refresh content-derived KPI values from the latest in-memory workspace snapshot.
+ if(cards[0]&&cards[1]){
+  const active=items.filter(i=>!i.trashed&&i.kind!=='folder');
+  const docs=active.filter(i=>i.kind==='doc').length;
+  const files=active.filter(i=>i.kind==='file');
+  const bytes=files.reduce((sum,i)=>sum+(Number(i.size)||0),0);
+  const pretty=bytes>=1e6?(bytes/1e6).toFixed(1)+' MB':bytes>=1000?(bytes/1000).toFixed(1)+' KB':bytes+' B';
+  const d=cards[0].querySelector('strong'),f=cards[1].querySelector('strong'),fs=cards[1].querySelector('small');
+  if(d)d.textContent=docs;if(f)f.textContent=files.length;if(fs)fs.textContent=pretty+' stored across files';
+ }
+}
+async function swWs(id){const next=WS.find(x=>x.id==id);if(!next){fail(new Error('Selected workspace was not found.'));return}try{W=next;localStorage.w=id;cwd=null;await reload();await go('home')}catch(e){fail(e)}}
+function theme(){const d=document.documentElement.dataset;d.t=d.t=='dark'?'light':'dark';localStorage.th=d.t}
+const acts=i=>i.trashed?`<a onclick="tr('${i.id}',0)">Restore</a><a onclick="del('${i.id}')">Delete forever</a>`:
+ `<a onclick="fav('${i.id}')" title="Favorite">${i.fav?'★':'☆'}</a>${i.perm=='edit'?`<a onclick="ren('${i.id}')" title="Rename">✏</a><a onclick="mv('${i.id}')" title="Move">📂</a><a onclick="tr('${i.id}',1)" title="Trash">🗑</a>`:''}${i.kind=='file'?`<a href="/api/items/${i.id}/download?dl=1&token=${T}" title="Download">⬇</a>`:''}`;
+const row=i=>`<div class="row" onclick="open_('${i.id}')"><span>${ic[i.kind]}${i.private?' 🔒':''} ${esc(i.title)}${i.snip?`<br><small class="mut">${snip(i.snip)}</small>`:''}</span><span class="mut">${esc(i.oname)}</span><span class="mut">${i.kind=='file'?fmt(i.size):''}</span><span class="mut">${ago(i.updated)}</span><span onclick="event.stopPropagation()">${acts(i)}</span></div>`;
+const list=(a,m='Nothing here yet.')=>a.length?`<div class="tbl"><div class="row hd"><span>Name</span><span>Owner</span><span>Size</span><span>Last modified</span><span></span></div>${a.map(row).join('')}</div>`:`<p class="mut">${m}</p>`;
+
+const fmExt=name=>String(name||'').split('.').pop().toLowerCase();
+const fmCategory=i=>{
+ if(i.kind==='folder')return 'folder';
+ const e=fmExt(i.title),m=String(i.mime||'').toLowerCase();
+ if(['pdf'].includes(e)||m==='application/pdf')return 'pdf';
+ if(['doc','docx','odt','rtf'].includes(e))return 'document';
+ if(['xls','xlsx','ods','csv'].includes(e))return 'spreadsheet';
+ if(['ppt','pptx','odp'].includes(e))return 'presentation';
+ if(['png','jpg','jpeg','gif','webp','svg','bmp','tif','tiff'].includes(e)||m.startsWith('image/'))return 'image';
+ if(['txt','md','log','json','xml'].includes(e)||m.startsWith('text/'))return 'text';
+ return 'other';
+};
+const fmIcon=i=>({folder:'📁',pdf:'📕',document:'📘',spreadsheet:'📊',presentation:'📽️',image:'🖼️',text:'📃',other:'📦'})[fmCategory(i)]||'📎';
+const fmSize=n=>{n=Number(n)||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(2)+' GB'};
+function fmPath(folderId){
+ const path=[];let id=folderId,guard=0;
+ while(id&&guard++<100){const f=items.find(x=>x.id===id&&x.kind==='folder');if(!f)break;path.unshift(f);id=f.parent}
+ return path;
+}
+function fmOpenFolder(id){cwd=id||null;render()}
+function fmSet(key,value){fmState[key]=value;if(key==='mode')localStorage.fmMode=value;render()}
+function fmFiltered(){
+ let a=live().filter(i=>['folder','file'].includes(i.kind)&&(i.parent||null)===cwd);
+ if(fmState.query.trim()){const q=fmState.query.trim().toLowerCase();a=a.filter(i=>String(i.title||'').toLowerCase().includes(q)||String(i.oname||'').toLowerCase().includes(q))}
+ if(fmState.type!=='all')a=a.filter(i=>fmCategory(i)===fmState.type);
+ const sorters={
+  name:(x,y)=>x.title.localeCompare(y.title,undefined,{sensitivity:'base'}),
+  modified:(x,y)=>(y.updated||0)-(x.updated||0),
+  size:(x,y)=>(y.size||0)-(x.size||0),
+  type:(x,y)=>fmCategory(x).localeCompare(fmCategory(y))||x.title.localeCompare(y.title)
+ };
+ return a.sort((x,y)=>{
+  if(x.kind!==y.kind)return x.kind==='folder'?-1:1;
+  return (sorters[fmState.sort]||sorters.name)(x,y);
+ });
+}
+function fmItemActions(i){
+ const links=[];
+ if(i.perm==='edit'){links.push(`<a onclick="event.stopPropagation();ren('${i.id}')">Rename</a>`,`<a onclick="event.stopPropagation();mv('${i.id}')">Move</a>`,`<a onclick="event.stopPropagation();tr('${i.id}',1)">Trash</a>`)}
+ if(i.kind==='file')links.push(`<a onclick="event.stopPropagation();preview(items.find(x=>x.id==='${i.id}'))">Preview</a>`,`<a href="/api/items/${i.id}/download?dl=1&token=${T}" onclick="event.stopPropagation()">Download</a>`,`<a onclick="event.stopPropagation();fileDetails('${i.id}')">Details</a>`);
+ links.push(`<a onclick="event.stopPropagation();fav('${i.id}')">${i.fav?'★':'☆'} Favorite</a>`);
+ return links.join('');
+}
+function fmCard(i){
+ const folder=i.kind==='folder';
+ return `<article class="fm-card ${folder?'fm-folder':''}" onclick="open_('${i.id}')">
+  <div class="fm-icon">${fmIcon(i)}</div>
+  <div class="fm-title" title="${esc(i.title)}">${esc(i.title)}</div>
+  <div class="fm-meta"><span>${folder?'Folder':fmCategory(i).replace(/^./,c=>c.toUpperCase())+' · '+fmSize(i.size)}</span><span>${esc(i.oname||'Unknown owner')}</span><span>${ago(i.updated)}</span></div>
+  <div class="fm-actions">${fmItemActions(i)}</div>
+ </article>`;
+}
+function fileManagerView(){
+ const path=fmPath(cwd),all=fmFiltered(),folders=all.filter(i=>i.kind==='folder').length,files=all.length-folders;
+ const options=[['all','All files'],['folder','Folders'],['pdf','PDF'],['document','Documents'],['spreadsheet','Spreadsheets / CSV'],['presentation','Presentations'],['image','Images'],['text','Text files'],['other','Other']];
+ return `<div class="fm-head"><div><h2 style="margin-bottom:5px">My Files</h2><div class="fm-crumbs"><a onclick="fmOpenFolder(null)">🏠 Home</a>${path.map(f=>`<span>›</span><a onclick="fmOpenFolder('${f.id}')">${esc(f.title)}</a>`).join('')}</div></div><span class="sp"></span><button onclick="newItem('folder')">＋ New folder</button><button class="pri" onclick="pickFile()">↑ Upload files</button></div>
+ <div class="fm-toolbar"><input aria-label="Filter files in this folder" placeholder="Filter this folder…" value="${esc(fmState.query)}" oninput="fmState.query=this.value;const el=document.querySelector('#fm-results');if(el)el.innerHTML=fmResultsHtml()">
+ <select aria-label="File category" onchange="fmSet('type',this.value)">${options.map(([v,l])=>`<option value="${v}" ${fmState.type===v?'selected':''}>${l}</option>`).join('')}</select>
+ <select aria-label="Sort files" onchange="fmSet('sort',this.value)"><option value="name" ${fmState.sort==='name'?'selected':''}>Name</option><option value="modified" ${fmState.sort==='modified'?'selected':''}>Last modified</option><option value="size" ${fmState.sort==='size'?'selected':''}>File size</option><option value="type" ${fmState.sort==='type'?'selected':''}>File type</option></select>
+ <div class="fm-toggle"><button class="${fmState.mode==='grid'?'active':''}" onclick="fmSet('mode','grid')" title="Grid view">▦</button><button class="${fmState.mode==='list'?'active':''}" onclick="fmSet('mode','list')" title="List view">☷</button></div>
+ <span class="fm-count">${folders} folders · ${files} files</span></div>
+ <div id="fm-upload-status" class="fm-upload-status" aria-live="polite"></div><div id="fm-results">${fmResultsHtml()}</div>`;
+}
+function fmResultsHtml(){
+ const a=fmFiltered();
+ if(!a.length)return `<div class="fm-empty"><div class="big">${cwd?'📂':'🗂️'}</div><b>${fmState.query||fmState.type!=='all'?'No matching items':'This folder is empty'}</b><p class="mut">Upload files or create a folder to organize your workspace.</p><button class="pri" onclick="pickFile()">Upload files</button> <button onclick="newItem('folder')">New folder</button></div>`;
+ if(fmState.mode==='grid')return `<div class="fm-grid">${a.map(fmCard).join('')}</div>`;
+ return list(a);
+}
+async function fileDetails(id){
+ const i=items.find(x=>x.id===id)||sharedItems.find(x=>x.id===id);if(!i)return;
+ const fields=[['Name',i.title],['Type',fmCategory(i)],['Owner',i.oname||'Unknown'],['Size',fmSize(i.size)],['MIME type',i.mime||'—'],['Created',i.created?ago(i.created):'—'],['Last modified',i.updated?ago(i.updated):'—'],['Location',fmPath(i.parent).map(x=>x.title).concat(['My Files']).join(' / ')]];
+ mod(`<h3>File details</h3><div class="fm-detail">${fields.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</div>${i.kind==='file'?`<div class="btns" style="margin-top:16px"><a class="btn" href="/api/items/${i.id}/download?dl=1&token=${T}">Download</a><button onclick="closeMod();preview(items.find(x=>x.id==='${i.id}'))">Preview</button></div>`:''}`);
+}
+
+const V={
+  home:()=>{const all=live(),L=all.filter(i=>i.kind!='folder'),docs=L.filter(i=>i.kind=='doc'),files=L.filter(i=>i.kind=='file'),shared=L.filter(i=>i.shared&&i.owner!=ME.id),owned=L.filter(i=>i.owner==ME.id),rc=JSON.parse(localStorage.rc||'[]').map(id=>all.find(i=>i.id==id)).filter(Boolean).slice(0,5),recent=[...L].sort((a,b)=>(b.updated||b.created||0)-(a.updated||a.created||0)).slice(0,5),bytes=files.reduce((n,i)=>n+(Number(i.size)||0),0),stored=bytes>1e6?(bytes/1e6).toFixed(1)+' MB':bytes>1000?(bytes/1000).toFixed(1)+' KB':bytes+' B',initial=(ME.name||'U').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  return `<section class="dash-hero"><div class="dash-orb orb-a"></div><div class="dash-orb orb-b"></div><div class="dash-hero-copy"><div class="dash-eyebrow"><span class="pulse-dot"></span> WORKSPACE OVERVIEW</div><h2>Welcome back, ${esc(ME.name)}</h2><p>Your team's work, knowledge and files — all in one place.</p><div class="dash-quick"><button class="pri" onclick="newItem('doc')">＋ Create document</button><button onclick="pickFile()">⇧ Upload files</button><button onclick="newItem('page')">＋ New wiki page</button></div></div><div class="dash-hero-art"><div class="dash-glass"><div class="glass-top"><span></span><span></span><span></span></div><div class="glass-lines"><i></i><i></i><i></i><i></i></div><div class="glass-chip">✦ PAWANSPACE</div></div></div></section>
+  <section class="dash-stats"><button class="stat-card" onclick="go('docs')"><span class="stat-icon si-blue">▤</span><span class="stat-label">Total documents</span><strong>${docs.length}</strong><small>Documents in this workspace</small><span class="stat-arrow">↗</span></button><button class="stat-card" onclick="go('files')"><span class="stat-icon si-violet">▧</span><span class="stat-label">Total files</span><strong>${files.length}</strong><small>${stored} stored across files</small><span class="stat-arrow">↗</span></button><button class="stat-card" onclick="go('shared')"><span class="stat-icon si-amber">⇄</span><span class="stat-label">Shared with me</span><strong>${shared.length}</strong><small>Items shared by teammates</small><span class="stat-arrow">↗</span></button><button class="stat-card" onclick="go('settings')"><span class="stat-icon si-green">♧</span><span class="stat-label">Team members</span><strong>${MEM.length}</strong><small>People in this workspace</small><span class="stat-arrow">↗</span></button></section>
+  <section class="dash-grid"><div class="dash-panel dash-recent"><div class="dash-panel-head"><div><h3>Recently opened</h3><p>Pick up where you left off</p></div><button onclick="go('docs')">View documents&nbsp; →</button></div>${rc.length?list(rc,'Open a document and it will appear here.'):`<div class="dash-empty"><span>◷</span><b>No recent documents yet</b><small>Open a document to see it here.</small></div>`}</div><div class="dash-panel dash-activity"><div class="dash-panel-head"><div><h3>Recent activity</h3><p>Latest workspace updates</p></div><span class="live-badge"><i></i> LIVE DATA</span></div>${recent.length?`<div class="activity-list">${recent.map((i,n)=>`<a class="activity-item" onclick="open_('${i.id}')"><span class="activity-icon ai-${n%4}">${ic[i.kind]||'•'}</span><span class="activity-copy"><b>${esc(i.title)}</b><small>${i.owner==ME.id?'Updated in your workspace':'Shared workspace item'} · ${i.updated?ago(i.updated):'Recently added'}</small></span><span class="activity-arrow">↗</span></a>`).join('')}</div>`:`<div class="dash-empty"><span>✧</span><b>No activity yet</b><small>New document updates will appear here.</small></div>`}</div></section>
+  <section class="dash-bottom"><div class="dash-panel"><div class="dash-panel-head"><div><h3>Quick access</h3><p>Jump into your workspace</p></div></div><div class="quick-grid"><button onclick="go('wiki')"><span>▦</span><b>Team Wiki</b><small>Knowledge and pages</small></button><button onclick="go('boards')"><span>▤</span><b>Boards & Tables</b><small>Organize team work</small></button><button onclick="go('favs')"><span>☆</span><b>Favorites</b><small>Your pinned items</small></button><button onclick="go('shared')"><span>⇄</span><b>Shared items</b><small>Collaborate together</small></button></div></div><div class="dash-panel dash-storage"><div class="dash-panel-head"><div><h3>Workspace snapshot</h3><p>A quick look at your content</p></div><span class="snapshot-icon">✦</span></div><div class="snapshot-row"><span>Documents</span><b>${docs.length}</b></div><div class="snapshot-track"><i style="width:${Math.min(100,docs.length/(Math.max(1,L.length))*100)}%"></i></div><div class="snapshot-row"><span>Files</span><b>${files.length}</b></div><div class="snapshot-track violet"><i style="width:${Math.min(100,files.length/(Math.max(1,L.length))*100)}%"></i></div><div class="snapshot-row"><span>Created by you</span><b>${owned.length}</b></div><div class="snapshot-foot">Content counts update from your current workspace.</div></div></section>`},
+  knowledge:()=>`<div id="knowledge-root"><div class="kh-empty">Loading Knowledge Hub…</div></div>`,
+  docs:()=>`<div class="btns"><h2 class="sp">Documents</h2><button class="pri" onclick="newItem('doc')">New document</button></div>`+list(live().filter(i=>i.kind=='doc')),
+ files:()=>fileManagerView(),
+ shared:()=>`<h2>Shared with Me</h2><p class="mut">Documents and files shared with you across your workspaces.</p>`+list(sharedItems,'Nothing has been shared with you yet.'),
+ wiki:()=>{const t=(p,d)=>live().filter(i=>['page','board','database'].includes(i.kind)&&(i.parent||null)==p).map(i=>`<div class="trow" style="margin-left:${d*20}px"><a onclick="open_('${i.id}')">${ic[i.kind]} ${esc(i.title)}</a> ${i.kind=='page'?`<a class="mut" onclick="newItem('page','${i.id}')">+ subpage</a>`:''}</div>`+t(i.id,d+1)).join('');
+  return `<div class="btns"><h2 class="sp">Team Wiki</h2><button onclick="newItem('board')">New board</button><button onclick="newItem('database')">New table</button><button class="pri" onclick="newItem('page')">New page</button></div><p class="mut">Nest pages to build your own structure: departments, projects, meeting notes, policies.</p>`+(t(null,0)||'<p class="mut">No pages yet. Create one from a template.</p>')},
+ boards:()=>`<div class="btns"><h2 class="sp">Boards & Tables</h2><button onclick="newItem('board')">New board</button><button class="pri" onclick="newItem('database')">New table</button></div>`+list(live().filter(i=>['board','database'].includes(i.kind)),'Create a kanban board or a database table.'),
+ favs:()=>`<h2>Favorites</h2>`+list(live().filter(i=>i.fav),'Star an item to pin it here.'),
+ trash:()=>`<h2>Trash</h2>`+list(items.filter(i=>i.trashed),'Trash is empty.'),
+  search:()=>`<h2>Global Search</h2><p class="mut">Search content across every workspace you can access. Results respect document permissions.</p>${globalSearchFilters()}${res.length?`<div class="tbl">${res.map((x,n)=>`<div class="row" onclick="openSearchResult('${x.id}')"><span>${ic[x.kind]||'📄'} ${esc(x.title)}<br><small class="mut">${esc(x.category||x.kind)} · ${esc(x.oname||'')} ${x.snip?'· '+esc(x.snip.slice(0,110)):''}</small></span><span class="mut">${esc(x.kind)}</span><span></span><span class="mut">${x.updated?ago(x.updated):''}</span><span>Open →</span></div>`).join('')}</div>`:'<div class="kh-empty">No matches yet. Enter a search term above.</div>'}`, 
+ settings:()=>`<h2>Settings</h2><h3>Members of ${esc(W.name)}</h3><div class="tbl">${MEM.map(m=>`<div class="row2" style="padding:8px 12px;display:flex;gap:10px"><span class="sp">${esc(m.name)} <span class="mut">${esc(m.email)}</span></span>${isAdmin()?`<select onchange="setRole('${esc(m.email)}',this.value)">${['admin','editor','viewer'].map(r=>`<option ${m.role==r?'selected':''}>${r}</option>`).join('')}<option value="remove">remove</option></select>`:`<span>${m.role}</span>`}</div>`).join('')}</div>
+  ${isAdmin()?`<h3>Invite by email</h3><div class="btns"><input id="ie" type="email" placeholder="name@company.com"><select id="ir"><option>editor</option><option>viewer</option><option>admin</option></select><button class="pri" onclick="invite()">Invite</button></div><p class="mut">If the person has no account yet, they join automatically when they register with this email.</p>`:''}
+  <h3>Teams</h3>${TEAMS.map(t=>`<div class="row2"><b>${esc(t.name)}</b> <span class="mut">${t.members.map(m=>esc(m.name)).join(', ')||'no members'}</span>${isAdmin()?` · <a onclick="teamAdd('${t.id}')">add member</a> · <a onclick="teamRm('${t.id}')">remove member</a> · <a onclick="teamDel('${t.id}')">delete team</a>`:''}</div>`).join('')||'<p class="mut">No teams yet. Teams let you share a page or folder with a whole group.</p>'}${isAdmin()?`<button onclick="newTeam()">Create team</button>`:''}
+  <h3>Workspaces</h3><button onclick="newWs()">Create new workspace</button>${isAdmin()?`<h3>Recent activity</h3><div id="aud" class="mut">Loading…</div>`:''}`,
+ editor:()=>cur.data?dataEditor():V.docEditor(),
+ docEditor:()=>{const ro=cur.perm!='edit',b=(l,c,v)=>`<button type="button" title="${l.replace(/<[^>]*>/g,'')}" ${ro?'disabled':''} onmousedown="event.preventDefault();ex('${c}'${v?`, '${v}'`:''})">${l}</button>`,x=(l,f)=>`<button type="button" ${ro?'disabled':''} onmousedown="event.preventDefault();${f}">${l}</button>`;
+  return `<div class="editor-shell"><div class="editor-topbar"><div class="bar"><a class="btn" onclick="back()" title="Back to workspace">← Back</a><input id="ti" aria-label="Document title" value="${esc(cur.title)}" ${ro?'disabled':''} onchange="rn(this.value)"><span id="st" class="editor-status">${ro?'View only':'Saved'}</span><span id="pres"></span><span class="sp"></span><button onclick="share()">Share</button>${['doc','page'].includes(cur.kind)&&cur.perm==='edit'?`<button onclick="editKnowledgeMeta('${cur.id}')">Knowledge details</button>`:''}<button onclick="hist()">History</button><a class="btn" href="/api/items/${cur.id}/export?fmt=pdf&token=${T}">PDF</a><a class="btn" href="/api/items/${cur.id}/export?fmt=docx&token=${T}">DOCX</a><button type="button" onclick="toggleEditorFocus()" title="Toggle focus mode">Focus</button></div></div>
+  ${ro?'':`<div class="editor-toolbar" role="toolbar" aria-label="Document formatting"><div class="tool-group">${b('<b>B</b>','bold')}${b('<i>I</i>','italic')}${b('<s>S</s>','strikeThrough')}</div><div class="tool-group">${b('H1','formatBlock','H1')}${b('H2','formatBlock','H2')}${b('H3','formatBlock','H3')}${b('Text','formatBlock','P')}</div><div class="tool-group">${b('• List','insertUnorderedList')}${b('1. List','insertOrderedList')}${b('☑ Checklist','taskList')}${b('Quote','blockquote')}</div><div class="tool-group">${b('Code block','codeBlock')}${b('Divider','horizontalRule')}${x('Link','lnk()')}<button type="button" onclick="insertTable()">Table</button><button type="button" onclick="$('#ii').click()">Image</button></div><div class="tool-group">${b('Undo','undo')}${b('Redo','redo')}${b('Clear','clearFormatting')}</div>${cur.kind=='page'?`<button type="button" onclick="newItem('page','${cur.id}')">＋ Subpage</button>`:''}</div>`}
+  <div class="editor-layout"><div class="editor-paper-wrap"><div id="ce" class="editor-paper"></div><div class="editor-footer"><span id="doc-stats">0 words · 0 min read</span><span>Autosave enabled · Live collaboration</span></div></div><aside class="editor-side"><h4>Comments & discussion</h4><div id="cms"></div><input id="ci" placeholder="Add a comment…" ${ro?'disabled':''} onkeydown="if(event.key=='Enter')cmt()"><small class="mut">Comments are visible to users with document access.</small></aside></div></div>`}
+};
+function mod(h){$('#modb').innerHTML=h+'<div class="btns" style="margin-top:14px"><button onclick="closeMod()">Close</button></div>';$('#mod').style.display='flex'}
+function closeMod(){$('#mod').style.display='none';$('#modb').innerHTML=''}
+async function newItem(kind,parent){if(kind=='board'||kind=='database'){const t=prompt('Name');if(!t)return;return mk({kind,title:t,parent:parent||null})}if(kind=='folder'){const t=prompt('Folder name');if(!t)return;return mk({kind,title:t,parent:cwd})}
+ window._p=parent||null;mod(`<h3>Choose a starting point</h3><div class="btns">${[['','Blank'],['meeting','Meeting notes'],['policy','Policy'],['project','Project plan']].map(([k,l])=>`<button class="pri" onclick="closeMod();mk({kind:'${kind}',template:'${k}',parent:_p})">${l}</button>`).join('')}</div>`)}
+async function mk(b){try{const d=await api('/items','POST',{ws:W.id,...b});await reload();if(b.kind=='folder'){view='files';render()}else edit(d.id)}catch(e){fail(e)}}
+function open_(id){const i=items.find(x=>x.id==id)||sharedItems.find(x=>x.id==id);if(!i)return;let rc=[];try{rc=JSON.parse(localStorage.rc||'[]');if(!Array.isArray(rc))rc=[]}catch{rc=[]}rc=rc.filter(x=>x!=id);rc.unshift(id);localStorage.rc=JSON.stringify(rc.slice(0,20));
+ if(i.kind=='folder'){cwd=id;view='files';render()}else if(i.kind=='file')preview(i);else edit(id)}
+// PAWANSPACE - Advanced File Preview V2
+// Replace the existing preview(i) function with this one.
+
+function preview(i) {
+    if (!i) return;
+
+    const ext = String(i.title || '')
+        .split('.')
+        .pop()
+        .toLowerCase();
+
+    const previewable = [
+        'xlsx',
+        'docx',
+        'pptx',
+        'csv',
+        'txt',
+        'md',
+        'json',
+        'log',
+        'xml'
+    ];
+
+    const downloadUrl =
+        `/api/items/${encodeURIComponent(i.id)}/download?token=${encodeURIComponent(T||'')}`;
+
+    const downloadLink = `
+        <a class="btn" href="${downloadUrl}&dl=1">
+            Download
+        </a>
+    `;
+
+    // Office documents and text-based files
+    if (previewable.includes(ext)) {
+
+        mod(`<h3>${esc(i.title || 'File preview')}</h3><p class="mut">Preparing preview…</p>`);
+        return api(`/items/${encodeURIComponent(i.id)}/preview`)
+            .then(d => {
+
+                mod(`
+                    <h3>${esc(i.title || 'File preview')}</h3>
+
+                    <div style="
+                        overflow:auto;
+                        max-height:66vh;
+                        padding:12px;
+                    ">
+                        ${typeof d?.html==='string' ? d.html : '<p>Nothing to preview.</p>'}
+                    </div>
+
+                    <div class="btns" style="margin-top:14px">
+                        ${downloadLink}
+                    </div>
+                `);
+
+            })
+            .catch(fail);
+    }
+
+    // Image, PDF and other file previews
+    const mime = String(i.mime || '').toLowerCase();
+
+    let body = '';
+
+    if (mime.startsWith('image/')) {
+
+        body = `
+            <img
+                src="${downloadUrl}"
+                alt="${esc(i.title || 'Image')}"
+                style="
+                    max-width:100%;
+                    max-height:65vh;
+                    object-fit:contain;
+                "
+            >
+        `;
+
+    } else if (
+        mime === 'application/pdf' ||
+        ext === 'pdf'
+    ) {
+
+        body = `
+            <iframe
+                src="${downloadUrl}"
+                title="${esc(i.title || 'PDF preview')}"
+                style="
+                    width:100%;
+                    height:65vh;
+                    border:0;
+                "
+            ></iframe>
+        `;
+
+    } else if (mime.startsWith('text/')) {
+
+        body = `
+            <iframe
+                src="${downloadUrl}"
+                title="${esc(i.title || 'Text preview')}"
+                style="
+                    width:100%;
+                    height:65vh;
+                    border:0;
+                "
+            ></iframe>
+        `;
+
+    } else {
+
+        body = `
+            <p class="mut">
+                Preview is not available for this format.
+                Download the file to open it.
+            </p>
+        `;
+    }
+
+    mod(`
+        <h3>${esc(i.title || 'File preview')}</h3>
+
+        ${body}
+
+        <div class="btns" style="margin-top:14px">
+            ${downloadLink}
+        </div>
+    `);
+}
+async function edit(id){try{document.body.classList.remove('editor-focus');if(cur&&view=='editor')await flush();if(view!=='editor')previousView=view;cur=await api('/items/'+id);if(cur.kind=='board'||cur.kind=='database')cur.data=pj(cur.content,cur.kind);DV={f:'',s:null,v:'table'};view='editor';render();connect(id)}catch(e){fail(e)}}
+function back(){document.body.classList.remove('editor-focus');const k=cur.kind;go(previousView==='shared'?'shared':k=='page'?'wiki':k=='doc'?'docs':'boards')}
+async function flush(){if(saveT){clearTimeout(saveT);saveT=null;await save()}}
+function chg(){lastEdit=Date.now();if($('#st'))$('#st').textContent='Saving…';updateDocStats();clearTimeout(saveT);saveT=setTimeout(save,700);
+ if(!crdtEditor){clearTimeout(sendT);sendT=setTimeout(()=>{if(sock&&sock.readyState==1)sock.send(JSON.stringify({t:'content',html:getContent()}))},120)}}
+function toggleEditorFocus(){document.body.classList.toggle('editor-focus')}
+function updateDocStats(){const el=$('#doc-stats');if(!el)return;const raw=crdtEditor?crdtEditor.getText():($('#ce')?.innerText||'');const words=(raw.trim().match(/\S+/g)||[]).length;const mins=Math.max(1,Math.ceil(words/200));el.textContent=`${words.toLocaleString()} words · ${mins} min read`}
+async function save(){saveT=null;if(!cur||(!cur.data&&!$('#ce')))return;try{await api('/items/'+cur.id,'PUT',{content:getContent()});if($('#st'))$('#st').textContent='Saved '+new Date().toLocaleTimeString()}catch(e){if($('#st'))$('#st').textContent='Save failed: '+e.message}}
+async function rn(v){try{await api('/items/'+cur.id,'PUT',{title:v});cur.title=v;await reload()}catch(e){fail(e)}}
+const ex=(c,v)=>{
+ if(crdtEditor){
+   const chain=crdtEditor.chain().focus();
+   const map={
+     bold:()=>chain.toggleBold().run(), italic:()=>chain.toggleItalic().run(), strikeThrough:()=>chain.toggleStrike().run(),
+     formatBlock:()=>{const h=String(v||'').toUpperCase();return h==='H1'?chain.toggleHeading({level:1}).run():h==='H2'?chain.toggleHeading({level:2}).run():h==='H3'?chain.toggleHeading({level:3}).run():chain.setParagraph().run()},
+     insertUnorderedList:()=>chain.toggleBulletList().run(), insertOrderedList:()=>chain.toggleOrderedList().run(),
+     taskList:()=>chain.toggleTaskList().run(), blockquote:()=>chain.toggleBlockquote().run(), codeBlock:()=>chain.toggleCodeBlock().run(),
+     horizontalRule:()=>chain.setHorizontalRule().run(), undo:()=>chain.undo().run(), redo:()=>chain.redo().run(),
+     createLink:()=>chain.setLink({href:v}).run(), clearFormatting:()=>chain.clearNodes().unsetAllMarks().run()
+   };
+   if(map[c]){const ok=map[c]();updateDocStats();return ok;}
+ }
+ document.execCommand(c,false,v);chg()
+},ins=h=>{if(crdtEditor){crdtEditor.chain().focus().insertContent(h).run();return}document.execCommand('insertHTML',false,h);chg()};
+function insertTable(){if(!crdtEditor)return;const rows=Math.max(1,Math.min(10,parseInt(prompt('Number of rows','3')||'3',10)));const cols=Math.max(1,Math.min(8,parseInt(prompt('Number of columns','3')||'3',10)));crdtEditor.chain().focus().insertTable({rows,cols,withHeaderRow:true}).run()}
+
+function lnk(){const u=prompt('Link URL (https://…)');if(u&&/^(https?:|mailto:)/i.test(u))ex('createLink',u)}
+function imgPick(input){
+  // The editor toolbar uses the existing hidden #ii input. If called without
+  // an argument, open that picker instead of creating a second picker.
+  const picker=input || $('#ii');
+  if(!picker)return;
+
+  if(!input){
+    picker.click();
+    return;
+  }
+
+  const file=picker.files && picker.files[0];
+  if(!file)return;
+
+  // Reset the input so selecting the same image again triggers onchange.
+  picker.value='';
+
+  if(!file.type || !file.type.startsWith('image/')){
+    alert('Please select a valid image.');
+    return;
+  }
+  if(file.size>2*1024*1024){
+    alert('Image size must be below 2 MB.');
+    return;
+  }
+
+  const editor=crdtEditor || window.PAWANSPACECRDT?.editor;
+  if(!editor){
+    alert('Collaborative editor is not ready. Please wait for the document to connect.');
+    return;
+  }
+
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const src=reader.result;
+    if(typeof src!=='string' || !src.startsWith('data:image/')){
+      alert('The selected image could not be processed.');
+      return;
+    }
+    try{
+      const inserted=editor.chain().focus().setImage({
+        src,
+        alt:file.name || 'Document image',
+        title:file.name || ''
+      }).run();
+      if(!inserted)alert('Could not insert this image at the current cursor position.');
+      updateDocStats();
+    }catch(e){
+      console.error('Image insertion failed:',e);
+      alert('Image insertion failed: '+(e.message||e));
+    }
+  };
+  reader.onerror=()=>{
+    console.error('Image file read failed:',reader.error);
+    alert('Unable to read the selected image.');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function connect(id){
+ closeSock();
+ // Docs and wiki pages use authenticated Yjs/Hocuspocus CRDT.
+ if(cur&&['doc','page'].includes(cur.kind)){
+   try{
+     const crdt=await (window.PAWANSPACECRDTReady || new Promise((resolve,reject)=>{
+        const timer=setTimeout(()=>reject(new Error('Local CRDT module did not load. Check /static/assets/crdt/crdt.js.')),15000);
+        window.addEventListener('pawanspace-crdt-ready',()=>{
+          clearTimeout(timer);
+          resolve(window.PAWANSPACECRDT);
+        },{once:true});
+      }));
+     if(!cur||cur.id!==id||view!=='editor')return;
+     crdtStartingId=id;window.PAWANSPACE_ME_NAME=ME?.name||'PAWANSPACE User';
+     await crdt.connect({id,initialHtml:cur.content||'',permission:cur.perm||'view',token:T,
+       onStatus:status=>{if(cur&&cur.id===id&&$('#st'))$('#st').textContent=status==='connected'?'Live collaboration connected':status==='connecting'?'Connecting collaboration…':'Collaboration disconnected'},
+       onPresence:users=>{if(cur&&cur.id===id&&$('#pres'))$('#pres').innerHTML=users.map(n=>`<span class="av" title="${esc(n)} is here">${esc((n[0]||'?').toUpperCase())}</span>`).join('')}
+     });
+     if(cur&&cur.id===id){crdtEditor=crdt.editor;crdtProvider=crdt.provider;crdtDoc=crdt.ydoc;updateDocStats()}
+   }catch(e){console.error('CRDT connection failed:',e);if($('#st'))$('#st').textContent='Collaboration unavailable';fail(new Error('Could not connect collaborative editor: '+e.message))}
+   return;
+ }
+ // Boards and databases retain the existing snapshot WebSocket.
+ sock=new WebSocket((location.protocol=='https:'?'wss':'ws')+'://'+location.host+'/ws/'+id+'?token='+T);
+ sock.onmessage=e=>{const m=JSON.parse(e.data);if(m.t=='content'&&cur&&cur.data){if(Date.now()-lastEdit>800){try{cur.data=JSON.parse(m.html);redraw();$('#st').textContent='Updated by '+m.by}catch{}}return}
+  if(m.t=='content'&&Date.now()-lastEdit>1500){const c=$('#ce');if(c&&c.innerHTML!=m.html){c.innerHTML=m.html;$('#st').textContent='Updated by '+m.by}}
+  if(m.t=='presence'&&$('#pres'))$('#pres').innerHTML=m.users.map(n=>`<span class="av" title="${esc(n)} is here">${esc((n[0]||'?').toUpperCase())}</span>`).join('')}
+}
+async function loadCm(){if(!$('#cms'))return;const cs=await api(`/items/${cur.id}/comments`).catch(()=>[]);$('#cms').innerHTML=cs.map(c=>`<div class="cm"><b>${esc(c.name)}</b> <span class="mut">${ago(c.ts)}</span><br>${esc(c.text).replace(/@(\w+)/g,'<b class="mn">@$1</b>')}</div>`).join('')||'<span class="mut">No comments yet.</span>'}
+async function cmt(){const t=$('#ci').value.trim();if(!t)return;try{await api(`/items/${cur.id}/comments`,'POST',{text:t});$('#ci').value='';loadCm()}catch(e){fail(e)}}
+async function share(){try{const s=await api(`/items/${cur.id}/shares`);mod(`<h3>Share “${esc(cur.title)}”</h3>${cur.can_share?`<div class="btns"><select id="se">${MEM.filter(m=>m.id&&m.id!=ME.id).map(m=>`<option value="u:${esc(m.email)}">${esc(m.name)} (${esc(m.email)})</option>`).join('')}${TEAMS.map(t=>`<option value="t:${t.id}">Team: ${esc(t.name)}</option>`).join('')}</select><select id="sp"><option value="view">Can view</option><option value="edit">Can edit</option><option value="none">Remove access</option></select><button class="pri" onclick="addShare()">Save</button></div>
+  <label><input type="checkbox" ${cur.private?'checked':''} onchange="setPriv(this.checked)"> Restricted: only owner, admins and the people/teams below (applies to everything inside too)</label>`:''}
+  ${s.map(x=>`<div class="row2">${esc(x.name)} <span class="mut">${esc(x.email)}</span> · ${x.perm=='edit'?'can edit':'can view'}</div>`).join('')||'<p class="mut">Not shared with anyone individually.</p>'}`)}catch(e){fail(e)}}
+async function addShare(){try{const v=$('#se').value;await api(`/items/${cur.id}/shares`,'POST',{...(v.startsWith('t:')?{team:v.slice(2)}:{email:v.slice(2)}),perm:$('#sp').value});share()}catch(e){fail(e)}}
+async function setPriv(v){try{await api('/items/'+cur.id,'PUT',{private:v});cur.private=v?1:0}catch(e){fail(e)}}
+async function hist(){const v=await api(`/items/${cur.id}/versions`);mod(`<h3>Version history</h3>`+(v.map(x=>`<div class="row2" style="display:flex"><span class="sp">${ago(x.ts)} · ${esc(x.name)}</span>${cur.perm=='edit'?`<a class="btn" onclick="restore(${x.id})">Restore</a>`:''}</div>`).join('')||'<p class="mut">Versions appear as you edit.</p>'))}
+async function restore(id){try{await api(`/versions/${id}/restore`,'POST');closeMod();edit(cur.id)}catch(e){fail(e)}}
+async function doSearch(){globalSearchText=$('#q')?.value.trim()||'';if(!globalSearchText){go('search');return}try{res=await api('/search?'+new URLSearchParams({q:globalSearchText}));rememberSearch(globalSearchText);if(cur&&view=='editor')await flush();view='search';cur=null;closeSock();render()}catch(e){fail(e)}}
+function pickFile(){$('#fi').click()}
+async function upl(el){
+ const fs=[...el.files];el.value='';if(!fs.length)return;
+ const parent=view==='files'&&cwd?cwd:'',status=$('#fm-upload-status');let ok=0,failed=[];
+ for(let n=0;n<fs.length;n++){
+  const f=fs[n];if(status)status.textContent=`Uploading ${n+1} of ${fs.length}: ${f.name}`;
+  const fd=new FormData();fd.append('f',f);
+  try{await api(`/upload?ws=${encodeURIComponent(W.id)}&parent=${encodeURIComponent(parent)}`,'POST',fd);ok++}
+  catch(e){failed.push(`${f.name}: ${e.message}`)}
+ }
+ await reload();
+ if(view!=='files'){cwd=parent||null;view='files'}
+ render();
+ const message=`${ok} of ${fs.length} file(s) uploaded successfully.`+(failed.length?` Failed: ${failed.join(' | ')}`:'');
+ const statusNow=$('#fm-upload-status');if(statusNow)statusNow.textContent=message;
+ if(failed.length)alert(message);
+}
+async function ren(id){const i=items.find(x=>x.id==id),t=prompt('New name',i.title);if(!t)return;try{await api('/items/'+id,'PUT',{title:t});await reload();render()}catch(e){fail(e)}}
+async function mv(id){
+ const item=items.find(x=>x.id===id);if(!item)return;
+ const folders=live().filter(x=>x.kind==='folder'&&x.id!==id);
+ const opts=[`<option value="">My Files (root)</option>`,...folders.map(f=>`<option value="${f.id}" ${f.id===item.parent?'selected':''}>${esc(fmPath(f.id).map(x=>x.title).join(' / '))}</option>`)].join('');
+ mod(`<h3>Move “${esc(item.title)}”</h3><p class="mut">Choose a destination folder. The server will validate the move and prevent invalid folder nesting.</p><label for="fm-move-target">Destination</label><select id="fm-move-target" style="width:100%;margin-top:8px">${opts}</select><div class="btns" style="margin-top:14px"><button class="pri" onclick="confirmMove('${id}')">Move item</button></div>`);
+}
+async function confirmMove(id){
+ const target=$('#fm-move-target')?.value||null;
+ try{await api('/items/'+id,'PUT',{parent:target});closeMod();await reload();render()}catch(e){fail(e)}
+}
+async function tr(id,on){try{await api(`/items/${id}/trash`,'POST',{on});await reload();render()}catch(e){fail(e)}}
+async function del(id){if(!confirm('Delete forever? This cannot be undone.'))return;try{await api('/items/'+id,'DELETE');await reload();render()}catch(e){fail(e)}}
+async function fav(id){try{await api(`/items/${id}/fav`,'POST');await reload();render()}catch(e){fail(e)}}
+async function setRole(email,role){try{await api(`/ws/${W.id}/members`,'POST',{email,role});WS=await api('/ws');W=WS.find(w=>w.id==W.id);await reload();render()}catch(e){fail(e)}}
+async function invite(){try{const d=await api(`/ws/${W.id}/members`,'POST',{email:$('#ie').value,role:$('#ir').value});await reload();render();alert(d.emailed?'Invitation email sent.':'Saved. Email sending is not configured, so ask them to register with this email at '+location.origin)}catch(e){fail(e)}}
+async function newWs(){
+ const n=prompt('Enter a name for your new workspace');
+ if(n===null||!n.trim())return;
+ try{
+  const created=await api('/ws','POST',{name:n.trim()});
+  WS=await api('/ws');
+  const createdId=created&&typeof created==='object'?created.id:null;
+  const target=createdId?WS.find(w=>w.id===createdId):[...WS].reverse().find(w=>w.name===n.trim());
+  if(!target)throw new Error('Workspace was created, but could not be selected. Refresh the page and choose it from the workspace list.');
+  await swWs(target.id);
+ }catch(e){fail(e)}
+}
+
+const snip=t=>esc(t).replace(/\u0002/g,'<mark>').replace(/\u0003/g,'</mark>'),uid=()=>Math.random().toString(36).slice(2,9);
+const getContent=()=>cur.data?JSON.stringify(cur.data):(crdtEditor?crdtEditor.getHTML():($('#ce')?$('#ce').innerHTML:''));
+const pj=(c,k)=>{try{const d=JSON.parse(c);if(d&&(d.columns||d.cols))return d}catch{}return k=='board'?{columns:[]}:{cols:[],rows:[]}};
+let DV={f:'',s:null,v:'table'};
+const redraw=()=>{const b=$('#bd');if(b)b.innerHTML=cur.kind=='board'?boardHtml():dbHtml()},touch=()=>{redraw();chg()};
+function dataEditor(){const ro=cur.perm!='edit';return `<div class="bar"><a onclick="back()" title="Back">←</a><input id="ti" value="${esc(cur.title)}" ${ro?'disabled':''} onchange="rn(this.value)"><span id="st" class="mut">${ro?'View only':'Saved'}</span><span class="sp"></span><span id="pres"></span>${cur.kind=='database'?'<button onclick="csv()">Export CSV</button>':''}<button onclick="share()">Share</button><button onclick="hist()">History</button></div><div id="bd">${cur.kind=='board'?boardHtml():dbHtml()}</div>`}
+/* ---- kanban board ---- */
+function boardHtml(){const ro=cur.perm!='edit';return `<div class="kb">${cur.data.columns.map(c=>`<div class="kc" ondragover="event.preventDefault()" ondrop="drop(event,'${c.id}')"><div class="kh"><b ${ro?'':`contenteditable onblur="colT('${c.id}',this.textContent)"`}>${esc(c.title)}</b><span class="mut">${c.cards.length}</span>${ro?'':`<a onclick="delCol('${c.id}')" title="Delete column">✕</a>`}</div>${c.cards.map(k=>`<div class="kd" draggable="${!ro}" ondragstart="event.dataTransfer.setData('text/plain','${k.id}')" onclick="editCard('${k.id}')"><div>${esc(k.t)}</div><small class="mut">${esc(k.a||'')}${k.due?' · '+esc(k.due):''}</small></div>`).join('')}${ro?'':`<button onclick="addCard('${c.id}')">+ Add card</button>`}</div>`).join('')}${ro?'':`<button onclick="addCol()">+ Add column</button>`}</div>`}
+const findCard=id=>{for(const c of cur.data.columns){const i=c.cards.findIndex(k=>k.id==id);if(i>=0)return[c,i]}};
+function drop(e,col){e.preventDefault();if(cur.perm!='edit')return;const f=findCard(e.dataTransfer.getData('text/plain'));if(!f)return;const k=f[0].cards.splice(f[1],1)[0];cur.data.columns.find(x=>x.id==col).cards.push(k);touch()}
+function addCard(col){const t=prompt('Card title');if(!t)return;cur.data.columns.find(x=>x.id==col).cards.push({id:uid(),t});touch()}
+function addCol(){const t=prompt('Column name');if(!t)return;cur.data.columns.push({id:uid(),title:t,cards:[]});touch()}
+function colT(id,t){const c=cur.data.columns.find(x=>x.id==id);t=t.trim();if(c&&t&&c.title!=t){c.title=t;chg()}}
+function delCol(id){if(!confirm('Delete this column and its cards?'))return;cur.data.columns=cur.data.columns.filter(c=>c.id!=id);touch()}
+function editCard(id){const f=findCard(id);if(!f)return;const k=f[0].cards[f[1]],ro=cur.perm!='edit',d=ro?'disabled':'';mod(`<h3>Card</h3><div style="display:grid;gap:8px"><input id="kt" value="${esc(k.t)}" ${d}><textarea id="kds" rows="4" ${d} placeholder="Description" style="background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:6px">${esc(k.d||'')}</textarea><select id="ka" ${d}><option value="">Unassigned</option>${MEM.filter(m=>m.id).map(m=>`<option ${k.a==m.name?'selected':''}>${esc(m.name)}</option>`).join('')}</select><input id="kdue" type="date" value="${esc(k.due||'')}" ${d}></div>${ro?'':`<div class="btns" style="margin-top:10px"><button class="pri" onclick="saveCard('${id}')">Save card</button><button onclick="delCard('${id}')">Delete card</button></div>`}`)}
+function saveCard(id){const f=findCard(id),k=f[0].cards[f[1]];k.t=$('#kt').value.trim()||k.t;k.d=$('#kds').value;k.a=$('#ka').value;k.due=$('#kdue').value;closeMod();touch()}
+function delCard(id){const f=findCard(id);f[0].cards.splice(f[1],1);closeMod();touch()}
+/* ---- database (table + board views) ---- */
+function dbHtml(){const ro=cur.perm!='edit';return `<div class="btns"><input id="dbf" placeholder="Filter rows…" value="${esc(DV.f)}" oninput="DV.f=this.value;$('#dbb').innerHTML=dbBody()"><select onchange="DV.v=this.value;redraw()"><option value="table" ${DV.v=='table'?'selected':''}>Table view</option><option value="board" ${DV.v=='board'?'selected':''}>Board view</option></select>${ro?'':`<button onclick="addRow()">+ New row</button><button onclick="colMenu()">+ New column</button>`}</div><div id="dbb">${dbBody()}</div>`}
+function dbBody(){const d=cur.data,ro=cur.perm!='edit';let rows=d.rows.filter(r=>!DV.f||Object.values(r.c).join(' ').toLowerCase().includes(DV.f.toLowerCase()));
+ if(DV.s){const t=(d.cols.find(c=>c.id==DV.s.c)||{}).type;rows=[...rows].sort((a,b)=>{let x=a.c[DV.s.c]??'',y=b.c[DV.s.c]??'';if(t=='number'){x=+x;y=+y}return(x>y?1:x<y?-1:0)*DV.s.d})}
+ if(DV.v=='board'){const g=d.cols.find(c=>c.type=='select');if(!g)return '<p class="mut">Add a column of type “select” to use board view.</p>';const nm=d.cols[0];
+  return `<div class="kb">${[...(g.options||[]),''].map(o=>`<div class="kc" data-o="${esc(o)}" ondragover="event.preventDefault()" ondrop="dbDrop(event,'${g.id}',this.dataset.o)"><div class="kh"><b>${esc(o||'No value')}</b></div>${rows.filter(r=>(r.c[g.id]||'')==o).map(r=>`<div class="kd" draggable="${!ro}" ondragstart="event.dataTransfer.setData('text/plain','${r.id}')">${esc(r.c[nm.id]||'Untitled')}</div>`).join('')}</div>`).join('')}</div>`}
+ return `<div class="tbl" style="overflow:auto"><table class="dt"><tr>${d.cols.map(c=>`<th><a onclick="d_s('${c.id}')">${esc(c.name)}${DV.s&&DV.s.c==c.id?(DV.s.d>0?' ▲':' ▼'):''}</a>${ro?'':` <a class="mut" onclick="colMenu('${c.id}')">⋯</a>`}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${d.cols.map(c=>`<td>${cell(r,c,ro)}</td>`).join('')}<td>${ro?'':`<a onclick="delRow('${r.id}')" title="Delete row">✕</a>`}</td></tr>`).join('')}</table></div>${rows.length?'':'<p class="mut" style="padding:8px">No rows yet. Use “New row”.</p>'}`}
+function cell(r,c,ro){const v=r.c[c.id]??'',a=`onchange="setCell('${r.id}','${c.id}',${c.type=='checkbox'?'this.checked':'this.value'})"`,dis=ro?'disabled':'';
+ if(c.type=='checkbox')return `<input type="checkbox" ${v?'checked':''} ${a} ${dis}>`;
+ if(c.type=='select')return `<select ${a} ${dis}><option value=""></option>${(c.options||[]).map(o=>`<option ${o==v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+ return `<input type="${c.type=='number'?'number':c.type=='date'?'date':'text'}" value="${esc(v)}" ${a} ${dis}>`}
+function setCell(rid,cid,v){cur.data.rows.find(x=>x.id==rid).c[cid]=v;chg()}
+function d_s(c){DV.s=DV.s&&DV.s.c==c?{c,d:-DV.s.d}:{c,d:1};$('#dbb').innerHTML=dbBody()}
+function addRow(){cur.data.rows.push({id:uid(),c:{}});touch()}
+function delRow(id){cur.data.rows=cur.data.rows.filter(r=>r.id!=id);touch()}
+function dbDrop(e,gid,o){e.preventDefault();if(cur.perm!='edit')return;const r=cur.data.rows.find(x=>x.id==e.dataTransfer.getData('text/plain'));if(r){r.c[gid]=o;touch()}}
+function colMenu(id){const c=id?cur.data.cols.find(x=>x.id==id):{name:'',type:'text',options:[]};mod(`<h3>${id?'Edit column':'New column'}</h3><div style="display:grid;gap:8px"><input id="cn" value="${esc(c.name)}" placeholder="Column name"><select id="ct">${['text','number','select','date','checkbox'].map(t=>`<option ${c.type==t?'selected':''}>${t}</option>`).join('')}</select><input id="co" value="${esc((c.options||[]).join(', '))}" placeholder="Select options, comma separated"></div><div class="btns" style="margin-top:10px"><button class="pri" onclick="saveCol('${id||''}')">Save column</button>${id?`<button onclick="delColumn('${id}')">Delete column</button>`:''}</div>`)}
+function saveCol(id){const n=$('#cn').value.trim();if(!n)return;const o={name:n,type:$('#ct').value,options:$('#co').value.split(',').map(x=>x.trim()).filter(Boolean)};if(id)Object.assign(cur.data.cols.find(x=>x.id==id),o);else cur.data.cols.push({id:uid(),...o});closeMod();touch()}
+function delColumn(id){cur.data.cols=cur.data.cols.filter(c=>c.id!=id);closeMod();touch()}
+function csv(){const d=cur.data,q=s=>'"'+String(s??'').replace(/"/g,'""')+'"',t=[d.cols.map(c=>q(c.name)).join(',')].concat(d.rows.map(r=>d.cols.map(c=>q(r.c[c.id])).join(','))).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=cur.title+'.csv';a.click()}
+/* ---- teams & audit ---- */
+async function newTeam(){const n=prompt('Team name');if(!n)return;try{await api(`/ws/${W.id}/teams`,'POST',{name:n});await reload();render()}catch(e){fail(e)}}
+async function tm(id,remove){const e=prompt(remove?'Email of the member to remove':'Member email (must already be in the workspace)');if(!e)return;try{await api(`/teams/${id}/members`,'POST',{email:e,remove});await reload();render()}catch(x){fail(x)}}
+const teamAdd=id=>tm(id,false),teamRm=id=>tm(id,true);
+async function teamDel(id){if(!confirm('Delete this team?'))return;try{await api('/teams/'+id,'DELETE');await reload();render()}catch(e){fail(e)}}
+async function loadAud(){try{const a=await api(`/ws/${W.id}/audit`);if($('#aud'))$('#aud').innerHTML=a.map(x=>`${ago(x.ts)} · ${esc(x.name)} · ${esc(x.act)}`).join('<br>')||'No activity yet.'}catch{}}
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if($('#cmd')?.style.display==='flex')closeCommandPalette();else openCommandPalette();return}
+ if($('#cmd')?.style.display==='flex'){if(e.key==='Escape'){e.preventDefault();closeCommandPalette();return}if(e.target?.id==='cmdq'&&e.key==='ArrowDown'){e.preventDefault();moveCommandSelection(1);return}if(e.target?.id==='cmdq'&&e.key==='ArrowUp'){e.preventDefault();moveCommandSelection(-1);return}if(e.target?.id==='cmdq'&&e.key==='Enter'){e.preventDefault();activateCommandSelection();return}}
+});
+document.addEventListener('input',e=>{if(e.target?.id==='cmdq'){clearTimeout(cmdTimer);cmdActive=-1;const qv=e.target.value;cmdTimer=setTimeout(()=>commandSearch(qv),220)}});
+boot();
+</script>
+
+<script type="module" src="/static/assets/crdt/crdt.js"></script>
+</body></html>
