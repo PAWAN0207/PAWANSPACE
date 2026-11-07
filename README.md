@@ -52,45 +52,87 @@ The collaboration service communicates with the FastAPI application to validate 
 
 ## System Architecture
 
-The diagram below shows the main runtime components and how requests, live document updates, and persistence move between them. PAWANSPACE runs as two cooperating services: FastAPI handles application features and APIs, while Hocuspocus manages live collaborative editing.
+PAWANSPACE uses a **two-service architecture**. The application layer is powered by FastAPI, while real-time document collaboration runs independently through a Node.js and Hocuspocus service. The browser interface connects to both services depending on the action being performed.
+
+### High-level architecture
 
 ```mermaid
-flowchart TD
-    USER["Team Members"] --> BROWSER["Web Browser"]
-    BROWSER --> FRONTEND["PAWANSPACE Web Interface"]
-    FRONTEND --> API["FastAPI Backend"]
-    API --> APPDB[("Main SQLite Database")]
-    API --> FILES[("Uploaded Files")]
+flowchart TB
+    subgraph CLIENT["1. Client Layer"]
+        USER["Team Members"]
+        BROWSER["Web Browser"]
+        UI["PAWANSPACE Web Interface<br/>HTML · CSS · JavaScript"]
+        EDITOR["Tiptap Editor"]
+        USER --> BROWSER --> UI
+        UI --> EDITOR
+    end
 
-    FRONTEND <-->|"HTTP API requests"| API
-    FRONTEND <-->|"WebSocket connection"| HUB["Hocuspocus Collaboration Server"]
-    HUB <--> YJS["Yjs CRDT Shared Document State"]
-    HUB --> COLLABDB[("Collaboration SQLite Database")]
-    HUB -->|"Ticket validation and access checks"| API
+    subgraph APP["2. Application Layer"]
+        API["FastAPI Application<br/>Python · Uvicorn"]
+        AUTH["Authentication<br/>Sessions · Access Validation"]
+        WORKSPACE["Workspace & Document APIs"]
+        FILEAPI["File Management APIs"]
+        API --> AUTH
+        API --> WORKSPACE
+        API --> FILEAPI
+    end
 
-    TIPTAP["Tiptap Editor"] --> YJS
-    VITE["Vite Build Tool"] -->|"Builds collaboration client bundle"| FRONTEND
+    subgraph COLLAB["3. Real-time Collaboration Layer"]
+        WS["Hocuspocus Server<br/>Node.js · WebSocket"]
+        YJS["Yjs CRDT<br/>Shared Document State"]
+        TICKET["Collaboration Ticket<br/>Validation"]
+        WS <--> YJS
+        WS --> TICKET
+    end
+
+    subgraph DATA["4. Persistence Layer"]
+        APPDB[("Main SQLite Database<br/>Users · Workspaces · Metadata")]
+        FILES[("File Storage<br/>Uploaded Documents")]
+        CRDTDB[("Collaboration SQLite Database<br/>Persisted Yjs State")]
+    end
+
+    subgraph BUILD["5. Frontend Build"]
+        VITE["Vite Build Tool"]
+        BUNDLE["Generated CRDT Client Bundle"]
+        VITE --> BUNDLE
+    end
+
+    UI <-->|"HTTP / REST API"| API
+    API --> APPDB
+    FILEAPI --> FILES
+    UI <-->|"WebSocket updates"| WS
+    EDITOR <--> YJS
+    TICKET -->|"Validate ticket / permissions"| API
+    WS --> CRDTDB
+    BUNDLE -.->|"Included in web interface"| UI
 ```
 
-### Request and collaboration flow
+### How the components work together
 
-1. A team member opens PAWANSPACE in a browser.
-2. The browser communicates with FastAPI for authentication, workspace data, document operations, and file management.
-3. For a collaborative editing session, the browser connects to the Hocuspocus WebSocket server.
-4. Yjs synchronizes shared document changes between connected collaborators.
-5. Hocuspocus persists collaboration state in its own SQLite database and validates access through the FastAPI application.
+| Stage | Component | What happens |
+|---|---|---|
+| 1. User access | Browser interface | Team members open PAWANSPACE and interact with the workspace dashboard and document interface. |
+| 2. Application requests | FastAPI | The frontend sends HTTP requests for authentication, workspace data, document operations, and file management. |
+| 3. Application data | Main SQLite database | FastAPI reads and writes application records, user information, workspace data, and document metadata. |
+| 4. File operations | File storage | Uploaded files are stored and accessed through the application's file-management flow. |
+| 5. Collaboration session | Hocuspocus | When a user enters a collaborative document, the browser establishes a WebSocket connection to the collaboration server. |
+| 6. Live synchronization | Yjs + Tiptap | Yjs maintains shared document state and synchronizes updates between connected editing clients. Tiptap provides the editor components. |
+| 7. Access validation | Signed collaboration ticket | The collaboration server asks the FastAPI application to validate the ticket and relevant access before allowing a collaboration session. |
+| 8. Collaboration persistence | Collaboration SQLite database | The Hocuspocus SQLite extension persists collaboration data separately from the main application database. |
+| 9. Frontend build | Vite | Vite builds the collaboration client bundle that is served with the web interface. |
 
 ### Service boundaries
 
-| Component | Main responsibility |
-|---|---|
-| Browser UI | Workspace experience, document interface, and user interactions |
-| FastAPI | Authentication, application APIs, workspace/document operations, file handling |
-| Main SQLite database | Application records and metadata |
-| Hocuspocus | WebSocket collaboration sessions |
-| Yjs CRDT | Conflict-aware synchronization of shared document state |
-| Collaboration SQLite database | Persistent collaboration data |
-| Vite | Builds the collaboration frontend bundle consumed by the web application |
+| Service / component | Responsibility | Local endpoint / storage |
+|---|---|---|
+| FastAPI application | Authentication, application APIs, workspace and document operations, file handling | `http://localhost:8000` |
+| Hocuspocus collaboration server | WebSocket connections and real-time collaboration sessions | `ws://127.0.0.1:1234` |
+| Main application database | User, workspace, document, and application metadata | `data/app.db` |
+| File storage | Uploaded workspace files | `data/files/` |
+| Collaboration database | Persisted collaborative document state | `collaboration/data/crdt.sqlite` |
+| Vite build output | Browser collaboration client bundle | `static/assets/crdt/crdt.js` |
+
+> **Architecture note:** The main application database and collaboration database are separate by design. FastAPI remains responsible for application-level access checks, while Hocuspocus manages the live collaboration connection and Yjs document synchronization.
 
 ---
 
@@ -403,6 +445,32 @@ python -m pytest
 The test result depends on the local environment and configuration. Run the tests after installing dependencies and configuring the application.
 
 ---
+
+## Testing & Validation
+
+The following checks were run during the PAWANSPACE development workflow.
+
+### Automated backend tests
+
+| Test | What it covers | Result |
+|---|---|---|
+| `test_full_flow` | Main application flow | **Passed** |
+| `test_teams_inheritance_boards` | Team, inheritance, and board-related behavior | **Passed** |
+| `test_rate_limit_and_logout` | Rate limiting and logout behavior | **Passed** |
+| **Pytest summary** | `3 passed, 1 warning` | **Passed** |
+
+### CRDT synchronization check
+
+A separate in-memory Yjs synchronization check was also run:
+
+| Check | Result |
+|---|---|
+| Client A update received by Client B | **Passed** |
+| Client B update received by Client A | **Passed** |
+| Shared document state matched on both clients | **Passed** |
+| Example merged text | `Hello from User A. Hello from User B.` |
+
+**Scope clarification:** The Yjs check validated bidirectional in-memory document-state synchronization. It was not a full automated end-to-end test of concurrent users communicating through the deployed Hocuspocus WebSocket server. The results above describe the checks actually performed; they should not be interpreted as a production certification or a complete security audit.
 
 ## Security Notes
 
