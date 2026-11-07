@@ -52,21 +52,24 @@ The collaboration service communicates with the FastAPI application to validate 
 
 ## System Architecture
 
-The platform is split into two cooperating runtime services: the FastAPI application handles application features and APIs, while the Hocuspocus service manages live collaborative editing.
+The diagram below shows the main runtime components and how requests, live document updates, and persistence move between them. PAWANSPACE runs as two cooperating services: FastAPI handles application features and APIs, while Hocuspocus manages live collaborative editing.
 
 ```mermaid
-flowchart TB
-    U[Team Members] --> B[Web Browser]
-    B --> UI[Web UI<br/>HTML · CSS · JavaScript]
-    UI --> API[FastAPI Application<br/>Python · Uvicorn]
-    API --> DB[(Main SQLite Database)]
-    API --> FS[(Uploaded Files)]
-    UI <-->|WebSocket updates| H[Hocuspocus Server<br/>Node.js]
-    H <--> Y[Yjs CRDT<br/>Shared document state]
-    H --> CDB[(Collaboration SQLite Database)]
-    H -->|Ticket validation / access checks| API
-    V[Vite build] -->|Builds collaboration bundle| UI
-    T[Tiptap editor components] --> Y
+flowchart TD
+    USER["Team Members"] --> BROWSER["Web Browser"]
+    BROWSER --> FRONTEND["PAWANSPACE Web Interface"]
+    FRONTEND --> API["FastAPI Backend"]
+    API --> APPDB[("Main SQLite Database")]
+    API --> FILES[("Uploaded Files")]
+
+    FRONTEND <-->|"HTTP API requests"| API
+    FRONTEND <-->|"WebSocket connection"| HUB["Hocuspocus Collaboration Server"]
+    HUB <--> YJS["Yjs CRDT Shared Document State"]
+    HUB --> COLLABDB[("Collaboration SQLite Database")]
+    HUB -->|"Ticket validation and access checks"| API
+
+    TIPTAP["Tiptap Editor"] --> YJS
+    VITE["Vite Build Tool"] -->|"Builds collaboration client bundle"| FRONTEND
 ```
 
 ### Request and collaboration flow
@@ -126,28 +129,20 @@ flowchart TB
 
 ## Technology Stack
 
-**Backend**
-- Python
-- FastAPI
-- SQLite
-- Uvicorn
+| Layer | Technologies | Purpose |
+|---|---|---|
+| Backend | **Python**, **FastAPI**, **Uvicorn** | REST APIs, authentication, workspace and document operations |
+| Main data storage | **SQLite** | Application records and metadata |
+| Frontend | **HTML5**, **CSS3**, **JavaScript** | Browser-based workspace interface |
+| Real-time server | **Node.js**, **Hocuspocus** | WebSocket connections and collaborative sessions |
+| Collaboration engine | **Yjs (CRDT)** | Synchronizes shared document changes between collaborators |
+| Rich-text editing | **Tiptap** | Editor extensions and collaborative editing components |
+| Frontend build | **Vite** | Builds the collaboration frontend bundle |
+| Collaboration persistence | **SQLite** via Hocuspocus extension | Stores collaboration state |
+| Package management | **pip**, **npm** | Python and Node.js dependency management |
+| Version control | **Git**, **GitHub** | Source control and project hosting |
+| Container configuration | **Docker**, **Docker Compose** | Container-related development/deployment configuration |
 
-**Frontend**
-- HTML
-- CSS
-- JavaScript
-
-**Real-time collaboration**
-- Node.js
-- Hocuspocus
-- Yjs
-- Tiptap
-- Vite
-
-**Development and deployment support**
-- Git
-- npm
-- Docker-related configuration files
 
 ---
 
