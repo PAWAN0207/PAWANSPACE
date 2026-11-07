@@ -1,10 +1,24 @@
+<div align="center">
+
 # PAWANSPACE
 
-### A Collaborative Team Workspace & Document Management Platform
+### One workspace. Every document. Better collaboration.
 
-PAWANSPACE is a web-based workspace designed to help teams organize work, create and manage documents, share files, and collaborate in real time. It combines a FastAPI application with a lightweight web interface and a separate Yjs/Hocuspocus collaboration service.
+**A Collaborative Team Workspace & Document Management Platform**
 
-> **Project status:** Development project. Review the configuration and deployment notes before exposing the application to the public internet.
+Organize team knowledge, manage files, and collaborate on documents in one place.
+
+![Python](https://img.shields.io/badge/Python-FastAPI-3776AB?logo=python&logoColor=white)
+![JavaScript](https://img.shields.io/badge/Frontend-Vanilla%20JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![Real-time](https://img.shields.io/badge/Collaboration-Yjs%20%7C%20Hocuspocus-6C5CE7)
+![Database](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Development-orange)
+
+</div>
+
+PAWANSPACE is a web-based team workspace built to bring documents, files, and collaboration together. The platform combines a **FastAPI backend**, a lightweight browser-based interface, and a dedicated **Yjs/Hocuspocus real-time collaboration service**.
+
+> **Project status:** Under active development. Review the configuration and deployment notes before exposing the application to the public internet.
 
 ---
 
@@ -12,7 +26,6 @@ PAWANSPACE is a web-based workspace designed to help teams organize work, create
 
 ![PAWANSPACE Dashboard](docs/screenshots/dashboard.png)
 
-*Add the dashboard screenshot at `docs/screenshots/dashboard.png` to display it here on GitHub.*
 
 ---
 
@@ -36,6 +49,45 @@ The application is composed of two services:
 | Collaboration server | Node.js, Hocuspocus, Yjs | `ws://127.0.0.1:1234` | Real-time collaborative document updates and CRDT persistence |
 
 The collaboration service communicates with the FastAPI application to validate collaboration tickets and access.
+
+## System Architecture
+
+The platform is split into two cooperating runtime services: the FastAPI application handles application features and APIs, while the Hocuspocus service manages live collaborative editing.
+
+```mermaid
+flowchart TB
+    U[Team Members] --> B[Web Browser]
+    B --> UI[Web UI<br/>HTML · CSS · JavaScript]
+    UI --> API[FastAPI Application<br/>Python · Uvicorn]
+    API --> DB[(Main SQLite Database)]
+    API --> FS[(Uploaded Files)]
+    UI <-->|WebSocket updates| H[Hocuspocus Server<br/>Node.js]
+    H <--> Y[Yjs CRDT<br/>Shared document state]
+    H --> CDB[(Collaboration SQLite Database)]
+    H -->|Ticket validation / access checks| API
+    V[Vite build] -->|Builds collaboration bundle| UI
+    T[Tiptap editor components] --> Y
+```
+
+### Request and collaboration flow
+
+1. A team member opens PAWANSPACE in a browser.
+2. The browser communicates with FastAPI for authentication, workspace data, document operations, and file management.
+3. For a collaborative editing session, the browser connects to the Hocuspocus WebSocket server.
+4. Yjs synchronizes shared document changes between connected collaborators.
+5. Hocuspocus persists collaboration state in its own SQLite database and validates access through the FastAPI application.
+
+### Service boundaries
+
+| Component | Main responsibility |
+|---|---|
+| Browser UI | Workspace experience, document interface, and user interactions |
+| FastAPI | Authentication, application APIs, workspace/document operations, file handling |
+| Main SQLite database | Application records and metadata |
+| Hocuspocus | WebSocket collaboration sessions |
+| Yjs CRDT | Conflict-aware synchronization of shared document state |
+| Collaboration SQLite database | Persistent collaboration data |
+| Vite | Builds the collaboration frontend bundle consumed by the web application |
 
 ---
 
