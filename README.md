@@ -1,22 +1,28 @@
 <div align="center">
 
-# PAWANSPACE
+# ✦ PAWANSPACE
 
-### One workspace. Every document. Better collaboration.
+### Your team's knowledge. Connected.
 
-**A Collaborative Team Workspace & Document Management Platform**
+**A Collaborative Workspace & Document Management Platform**
 
-Organize team knowledge, manage files, and collaborate on documents in one place.
+Create, organize, share, and collaboratively edit documents from one unified workspace.
 
-![Python](https://img.shields.io/badge/Python-FastAPI-3776AB?logo=python&logoColor=white)
-![JavaScript](https://img.shields.io/badge/Frontend-Vanilla%20JavaScript-F7DF1E?logo=javascript&logoColor=black)
-![Real-time](https://img.shields.io/badge/Collaboration-Yjs%20%7C%20Hocuspocus-6C5CE7)
-![Database](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Development-orange)
+<br/>
+
+![Python](https://img.shields.io/badge/Backend-Python%20%7C%20FastAPI-2563EB?style=for-the-badge&logo=fastapi&logoColor=white)
+![JavaScript](https://img.shields.io/badge/Frontend-JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111827)
+![Yjs](https://img.shields.io/badge/Realtime-Yjs%20%2B%20Hocuspocus-7C3AED?style=for-the-badge)
+![SQLite](https://img.shields.io/badge/Storage-SQLite-0F6B9A?style=for-the-badge&logo=sqlite&logoColor=white)
+![Status](https://img.shields.io/badge/Project-Active%20Development-F59E0B?style=for-the-badge)
+
+<br/>
+
+[Explore the Repository](https://github.com/PAWAN0207/PAWANSPACE) · [Report an Issue](https://github.com/PAWAN0207/PAWANSPACE/issues)
 
 </div>
 
-PAWANSPACE is a web-based team workspace built to bring documents, files, and collaboration together. The platform combines a **FastAPI backend**, a lightweight browser-based interface, and a dedicated **Yjs/Hocuspocus real-time collaboration service**.
+PAWANSPACE brings team documents, files, and real-time collaboration into one workspace. It combines a **FastAPI application**, a browser-based interface, and a dedicated **Yjs/Hocuspocus collaboration service**.
 
 > **Project status:** Under active development. Review the configuration and deployment notes before exposing the application to the public internet.
 
@@ -515,9 +521,13 @@ No license has been specified yet. Unless a license is added to this repository,
 
 ---
 
-## Author
+## 👨‍💻 About the Author
 
-**PAWANSPACE**  
-GitHub: [PAWAN0207](https://github.com/PAWAN0207)
+**Pawan Ajay Prasad**  
+Aspiring **AI/ML Engineer & Data Scientist**, focused on building practical AI, Machine Learning, and Generative AI applications.
 
-Repository: [github.com/PAWAN0207/PAWANSPACE](https://github.com/PAWAN0207/PAWANSPACE)
+### Connect
+
+- 💼 **LinkedIn:** [Pawan Prasad](https://www.linkedin.com/in/pawan-prasad-analyst/)
+- 🐙 **GitHub:** [PAWAN0207](https://github.com/PAWAN0207)
+- 📦 **Project Repository:** [PAWANSPACE](https://github.com/PAWAN0207/PAWANSPACE)
